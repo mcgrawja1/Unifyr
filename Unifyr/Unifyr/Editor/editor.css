@@ -3,21 +3,24 @@
   final look arrives with the Claude Design pass (D11). No color here is
   canonical.
 */
-/* Serene tokens (design/final) — keep in sync with Theme.swift. */
+/* Fluent tokens (Outlook design language) — keep in sync with Theme.swift
+   (Theme.Palette): text=textPrimary, secondary=textSecondary,
+   rule=separator, code-bg=hover, accent=primary. */
 :root {
   color-scheme: light dark;
-  --hv-text: #1a1c20;
-  --hv-secondary: #7f838c;
-  --hv-rule: rgba(0, 0, 0, 0.08);
-  --hv-code-bg: #f1f3f7;
-  --hv-accent: #3e8ef7;
+  --hv-text: #242424;
+  --hv-secondary: #616161;
+  --hv-rule: #e5e5e5;
+  --hv-code-bg: #f0f0f0;
+  --hv-accent: #0f6cbd;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --hv-text: #f1f3f6;
-    --hv-secondary: #969aa3;
-    --hv-rule: rgba(255, 255, 255, 0.09);
-    --hv-code-bg: #31343a;
+    --hv-text: #f3f2f1;
+    --hv-secondary: #b3b0ad;
+    --hv-rule: #3b3a39;
+    --hv-code-bg: #323130;
+    --hv-accent: #479ef5;
   }
 }
 
@@ -152,21 +155,21 @@ html, body {
   max-height: 320px;
   overflow-y: auto;
   padding: 4px;
-  border-radius: 10px;
+  border-radius: 6px;
   background: #ffffff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--hv-rule);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
 }
 @media (prefers-color-scheme: dark) {
   .slash-menu {
-    background: #24262b;
-    border-color: rgba(255, 255, 255, 0.09);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    background: #252423;
+    border-color: var(--hv-rule);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   }
 }
 .slash-item {
   padding: 6px 10px;
-  border-radius: 7px;
+  border-radius: 4px;
   cursor: pointer;
 }
 .slash-item.selected { background: rgba(62, 142, 247, 0.18); }
@@ -611,7 +614,7 @@ body.wide .ProseMirror {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.ask-toast.error { color: #e5624d; }
+.ask-toast.error { color: light-dark(#c50f1f, #f1707b); }
 
 /* Bookmark edit affordance */
 .ProseMirror .bookmark-block { position: relative; }

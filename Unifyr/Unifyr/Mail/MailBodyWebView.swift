@@ -92,15 +92,17 @@ struct MailBodyWebView {
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
+          /* Fluent paper tokens — keep in sync with Theme.swift
+             (mailPaper/mailPaperText/primary/textSecondary). */
           :root { color-scheme: light; }
           html, body { margin: 0; padding: 16px; background: #ffffff;
             font: 15px/1.55 -apple-system, system-ui, sans-serif;
-            color: #1c1c1e; -webkit-text-size-adjust: 100%; word-break: break-word; }
+            color: #242424; -webkit-text-size-adjust: 100%; word-break: break-word; }
           img { max-width: 100%; height: auto; }
           pre.hv-plain { white-space: pre-wrap; font: inherit; }
-          a { color: #2f6fba; }
+          a { color: #0f6cbd; }
           table { max-width: 100% !important; }
-          blockquote { border-left: 3px solid rgba(128,128,128,.3); margin-left: 0; padding-left: 12px; color: #6e6e73; }
+          blockquote { border-left: 3px solid rgba(128,128,128,.3); margin-left: 0; padding-left: 12px; color: #616161; }
         </style>
         </head><body>\(body)</body></html>
         """
