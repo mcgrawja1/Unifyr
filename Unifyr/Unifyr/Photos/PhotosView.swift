@@ -169,8 +169,7 @@ private struct PhotoPreview: View {
                 }
                 Spacer()
                 Button("Done") { dismiss() }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Theme.Palette.primary)
+                    .buttonStyle(.fluentPrimary)
             }
         }
         .padding(Theme.Spacing.lg)

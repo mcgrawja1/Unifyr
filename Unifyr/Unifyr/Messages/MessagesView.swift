@@ -146,8 +146,7 @@ struct MessagesView: View {
                         NSWorkspace.shared.open(url)
                     }
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.primary)
+                .buttonStyle(.fluentPrimary)
                 Button("Check Again") {
                     Task { await start() }
                 }
@@ -642,7 +641,8 @@ private struct ChatRow: View {
 }
 
 /// iMessage green vs SMS — the color Apple's app uses for SMS bubbles.
-let unifyrSMSGreen = Color(hex: 0x34C759)
+/// (Alias; the value lives in Theme.Palette.smsGreen.)
+let unifyrSMSGreen = Theme.Palette.smsGreen
 
 /// The per-type service icon (matching the notification icon style): a
 /// rounded tinted tile with a message glyph, plus the service name.
@@ -900,8 +900,7 @@ private struct NewMessageSheet: View {
                         errorText = error.localizedDescription
                     }
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.primary)
+                .buttonStyle(.fluentPrimary)
                 .keyboardShortcut(.defaultAction)
                 .disabled(!handleLooksSendable || text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }

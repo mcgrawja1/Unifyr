@@ -246,8 +246,7 @@ struct DriveView: View {
                         .font(Theme.Font.cardBody)
                         .foregroundStyle(Theme.Palette.textSecondary)
                     Button("Add Location…") { requestLocation() }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Theme.Palette.primary)
+                        .buttonStyle(.fluentPrimary)
                 }
                 .padding(Theme.Spacing.md)
             }
@@ -314,8 +313,10 @@ struct DriveView: View {
                 }
             }
             .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
+            .tint(Theme.Palette.primary)
         }
-        .background(Theme.Palette.surface)
+        .background(isCompact ? Theme.Palette.surface : Theme.Palette.navPane)
         .toolbar {
             ToolbarItem {
                 Menu {

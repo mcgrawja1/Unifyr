@@ -156,6 +156,11 @@ enum Theme {
         static let mailPaper = Color(hex: 0xFFFFFF)
         static let mailPaperText = Color(hex: 0x242424)
 
+        /// SMS (green-bubble) messages — matches Messages.app's semantic
+        /// color; the one sanctioned green (the no-green rule covers chrome
+        /// and success states, not iMessage semantics).
+        static let smsGreen = Color(hex: 0x34C759)
+
         // MARK: Legacy aliases (Serene names still used across modules;
         // retire during Phase 5 cleanup — do not add new call sites).
 
