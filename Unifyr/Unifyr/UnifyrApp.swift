@@ -117,5 +117,10 @@ struct UnifyrApp: App {
                 .environment(\.contactPhotos, contactPhotos)
         }
         .modelContainer(modelContainer)
+        #if os(macOS)
+        // Outlook chrome: the brand title bar in AppShell replaces the native
+        // one; traffic lights float over the blue band.
+        .windowStyle(.hiddenTitleBar)
+        #endif
     }
 }

@@ -2,10 +2,10 @@
 //  ContentView.swift
 //  Unifyr
 //
-//  App shell: a sidebar of modules + a detail area. Phase 1 lights up the
-//  Dashboard; later phases (Notes, Mail, Photos, Claude) attach to the same
-//  navigation. Future modules appear as disabled rows so the roadmap is legible
-//  in the UI itself.
+//  App shell. Regular widths (Mac, iPad) wear the Outlook chrome: brand title
+//  bar + module icon rail + module content as a floating pane card (see
+//  AppShell.swift). iPhone keeps its stacked NavigationSplitView and receives
+//  the design language through tokens only.
 //
 
 import SwiftUI
@@ -15,6 +15,7 @@ struct ContentView: View {
     // binding (macOS tolerates a non-optional one).
     @State private var selection: SidebarItem? = .dashboard
     @Environment(\.mailService) private var mailService
+    @Environment(\.isCompactLayout) private var isCompact
     #if os(macOS)
     @Environment(\.messagesDB) private var messagesDB
     #endif
@@ -48,17 +49,129 @@ struct ContentView: View {
     }
 
     var body: some View {
+        Group {
+            if isCompact {
+                compactShell
+            } else {
+                outlookShell
+            }
+        }
+        // Messages unread badge — polled (chat.db has no change feed);
+        // silently 0 until Full Disk Access is granted.
+        .task {
+            while !Task.isCancelled {
+                #if os(macOS)
+                messagesUnread = await messagesDB?.unreadCount() ?? 0
+                #endif
+                // Drive the notification hub from the same tick: message
+                // arrivals, reminder/event scheduling, app badge.
+                if let coordinator = notificationCoordinator {
+                    coordinator.cachedMessagesUnread = messagesUnread
+                    await coordinator.tick()
+                }
+                try? await Task.sleep(for: .seconds(30))
+            }
+        }
+        // Recount the moment a conversation is read in Unifyr, so the
+        // badge clears immediately instead of on the next 30s tick.
+        .onReceive(NotificationCenter.default.publisher(for: .unifyrMessagesReadLocally)) { _ in
+            #if os(macOS)
+            Task {
+                messagesUnread = await messagesDB?.unreadCount() ?? 0
+                await notificationCoordinator?.refreshMessagesBadge(unread: messagesUnread)
+            }
+            #endif
+        }
+        .sheet(isPresented: $showingSearch) {
+            UniversalSearchView { hit in
+                handleSearchHit(hit)
+            }
+        }
+        // Context menus can't present sheets — the tag manager is
+        // app-global, summoned from any module's "Edit Tags…".
+        .onReceive(NotificationCenter.default.publisher(for: .unifyrShowTagManager)) { _ in
+            showingTagManager = true
+        }
+        // Dashboard pinned-item rows: switch to the module and hand off
+        // via the DeepLink latch (no timers — see DeepLink).
+        .onReceive(NotificationCenter.default.publisher(for: .unifyrRevealNote)) { notification in
+            guard let id = notification.userInfo?["id"] as? UUID else { return }
+            selection = .notes
+            DeepLink.send(.unifyrOpenNote, userInfo: ["id": id])
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .unifyrRevealReminder)) { notification in
+            guard let id = notification.userInfo?["id"] as? String else { return }
+            selection = .reminders
+            DeepLink.send(.unifyrOpenReminder, userInfo: ["id": id])
+        }
+        // Universal @-mention chips (contact/event/reminder) route to
+        // their module, latching the specific item where one exists.
+        .onReceive(NotificationCenter.default.publisher(for: .unifyrOpenMention)) { notification in
+            switch notification.userInfo?["kind"] as? String {
+            case "contact":
+                selection = .contacts
+            case "event":
+                selection = .calendar
+                if let date = notification.userInfo?["date"] as? Date {
+                    DeepLink.send(.unifyrOpenCalendarDate, userInfo: ["date": date])
+                }
+            case "reminder":
+                selection = .reminders
+                if let id = notification.userInfo?["id"] as? String {
+                    DeepLink.send(.unifyrOpenReminder, userInfo: ["id": id])
+                }
+            default:
+                break
+            }
+        }
+        // Tapping a Unifyr notification opens its module.
+        .onReceive(NotificationCenter.default.publisher(for: .unifyrOpenModule)) { notification in
+            guard let raw = notification.userInfo?["module"] as? String,
+                  let item = SidebarItem(rawValue: raw),
+                  SidebarItem.available.contains(item) else { return }
+            selection = item
+        }
+        .sheet(isPresented: $showingTagManager) {
+            TagManagerView()
+        }
+    }
+
+    // MARK: Outlook chrome (Mac, iPad)
+
+    /// Brand title bar over [icon rail | module content as a floating card].
+    private var outlookShell: some View {
+        VStack(spacing: 0) {
+            AppTitleBar(showingSearch: $showingSearch)
+            HStack(spacing: 0) {
+                ModuleRail(selection: $selection) { badgeCount(for: $0) }
+                moduleDetail
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .paneCard()
+                    .padding(Theme.Metrics.paneGutter)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Theme.Palette.windowBackground)
+        }
+        #if os(macOS)
+        // The blue band replaces the (hidden) native title bar entirely.
+        .ignoresSafeArea(.container, edges: .top)
+        #endif
+    }
+
+    // MARK: Compact shell (iPhone — stacked navigation, styling only)
+
+    private var compactShell: some View {
         NavigationSplitView {
             List(selection: $selection) {
                 Section {
                     ForEach(SidebarItem.available) { item in
                         Label(item.title, systemImage: item.systemImage)
-                            // Serene: the Claude nav item wears the AI accent
-                            // (amber) — the one warm element in the sidebar.
+                            // The Claude nav item wears the AI accent (amber)
+                            // — the one warm element in the sidebar.
                             .foregroundStyle(
                                 item == .claude && selection != .claude
                                     ? Theme.Palette.claude
-                                    : Color.primary
+                                    : Theme.Palette.textPrimary
                             )
                             .badge(badgeCount(for: item))
                             .tag(item)
@@ -76,33 +189,6 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Unifyr")
-            .navigationSplitViewColumnWidth(min: 200, ideal: 220)
-            // Messages unread badge — polled (chat.db has no change feed);
-            // silently 0 until Full Disk Access is granted.
-            .task {
-                while !Task.isCancelled {
-                    #if os(macOS)
-                    messagesUnread = await messagesDB?.unreadCount() ?? 0
-                    #endif
-                    // Drive the notification hub from the same tick: message
-                    // arrivals, reminder/event scheduling, app badge.
-                    if let coordinator = notificationCoordinator {
-                        coordinator.cachedMessagesUnread = messagesUnread
-                        await coordinator.tick()
-                    }
-                    try? await Task.sleep(for: .seconds(30))
-                }
-            }
-            // Recount the moment a conversation is read in Unifyr, so the
-            // badge clears immediately instead of on the next 30s tick.
-            .onReceive(NotificationCenter.default.publisher(for: .unifyrMessagesReadLocally)) { _ in
-                #if os(macOS)
-                Task {
-                    messagesUnread = await messagesDB?.unreadCount() ?? 0
-                    await notificationCoordinator?.refreshMessagesBadge(unread: messagesUnread)
-                }
-                #endif
-            }
             .toolbar {
                 ToolbarItem {
                     Button {
@@ -114,90 +200,43 @@ struct ContentView: View {
                     .help("Search Unifyr (⌘K)")
                 }
             }
-            .sheet(isPresented: $showingSearch) {
-                UniversalSearchView { hit in
-                    handleSearchHit(hit)
-                }
-            }
-            // Context menus can't present sheets — the tag manager is
-            // app-global, summoned from any module's "Edit Tags…".
-            .onReceive(NotificationCenter.default.publisher(for: .unifyrShowTagManager)) { _ in
-                showingTagManager = true
-            }
-            // Dashboard pinned-item rows: switch to the module and hand off
-            // via the DeepLink latch (no timers — see DeepLink).
-            .onReceive(NotificationCenter.default.publisher(for: .unifyrRevealNote)) { notification in
-                guard let id = notification.userInfo?["id"] as? UUID else { return }
-                selection = .notes
-                DeepLink.send(.unifyrOpenNote, userInfo: ["id": id])
-            }
-            .onReceive(NotificationCenter.default.publisher(for: .unifyrRevealReminder)) { notification in
-                guard let id = notification.userInfo?["id"] as? String else { return }
-                selection = .reminders
-                DeepLink.send(.unifyrOpenReminder, userInfo: ["id": id])
-            }
-            // Universal @-mention chips (contact/event/reminder) route to
-            // their module, latching the specific item where one exists.
-            .onReceive(NotificationCenter.default.publisher(for: .unifyrOpenMention)) { notification in
-                switch notification.userInfo?["kind"] as? String {
-                case "contact":
-                    selection = .contacts
-                case "event":
-                    selection = .calendar
-                    if let date = notification.userInfo?["date"] as? Date {
-                        DeepLink.send(.unifyrOpenCalendarDate, userInfo: ["date": date])
-                    }
-                case "reminder":
-                    selection = .reminders
-                    if let id = notification.userInfo?["id"] as? String {
-                        DeepLink.send(.unifyrOpenReminder, userInfo: ["id": id])
-                    }
-                default:
-                    break
-                }
-            }
-            // Tapping a Unifyr notification opens its module.
-            .onReceive(NotificationCenter.default.publisher(for: .unifyrOpenModule)) { notification in
-                guard let raw = notification.userInfo?["module"] as? String,
-                      let item = SidebarItem(rawValue: raw),
-                      SidebarItem.available.contains(item) else { return }
-                selection = item
-            }
-            .sheet(isPresented: $showingTagManager) {
-                TagManagerView()
-            }
         } detail: {
-            // nil (nothing selected, possible on iPhone's stacked nav) shows
-            // the Dashboard.
-            switch selection ?? .dashboard {
-            case .dashboard:
-                DashboardView()
-            case .calendar:
-                CalendarView()
-            case .reminders:
-                RemindersView()
-            case .notes:
-                NotesView()
-            case .drive:
-                DriveView()
-            case .contacts:
-                ContactsView()
-            case .mail:
-                MailView()
-            case .messages:
-                // Mac-only (chat.db + Messages automation don't exist on iOS).
-                #if os(macOS)
-                MessagesView()
-                #else
-                EmptyView()
-                #endif
-            case .clock:
-                ClockView()
-            case .photos:
-                PhotosView()
-            case .claude:
-                ClaudeView()
-            }
+            moduleDetail
+        }
+    }
+
+    /// nil (nothing selected, possible on iPhone's stacked nav) shows the
+    /// Dashboard.
+    @ViewBuilder
+    private var moduleDetail: some View {
+        switch selection ?? .dashboard {
+        case .dashboard:
+            DashboardView()
+        case .calendar:
+            CalendarView()
+        case .reminders:
+            RemindersView()
+        case .notes:
+            NotesView()
+        case .drive:
+            DriveView()
+        case .contacts:
+            ContactsView()
+        case .mail:
+            MailView()
+        case .messages:
+            // Mac-only (chat.db + Messages automation don't exist on iOS).
+            #if os(macOS)
+            MessagesView()
+            #else
+            EmptyView()
+            #endif
+        case .clock:
+            ClockView()
+        case .photos:
+            PhotosView()
+        case .claude:
+            ClaudeView()
         }
     }
 }
