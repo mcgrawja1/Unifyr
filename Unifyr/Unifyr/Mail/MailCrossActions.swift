@@ -236,12 +236,24 @@ struct EventFromEmailView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-            Text("New Event from Email")
-                .font(Theme.Font.cardTitle)
+        QuickCreateCard(
+            headerLine1: "New Event from Email",
+            headerLine2: message.subject,
+            discardTitle: "Cancel",
+            saveTitle: "Add to Calendar",
+            saveDisabled: title.isEmpty || saving,
+            onDiscard: { dismiss() },
+            onSave: { Task { await save() } }
+        ) {
+            eventForm
+        }
+        .frame(width: 380)
+        .task { await loadCalendars() }
+    }
 
-            TextField("Title", text: $title)
-                .textFieldStyle(.roundedBorder)
+    private var eventForm: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+            FluentFormField(label: "Title", text: $title, systemImage: "quote.opening")
 
             DatePicker("Starts", selection: $start)
 
@@ -266,28 +278,15 @@ struct EventFromEmailView: View {
                 }
             }
 
-            HStack {
-                Button("Cancel") { dismiss() }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Theme.Palette.textSecondary)
-                Spacer()
-                Button {
-                    Task { await save() }
-                } label: {
-                    HStack(spacing: Theme.Spacing.xs) {
-                        if saving { ProgressView().controlSize(.small) }
-                        Text("Add to Calendar")
-                    }
+            if saving {
+                HStack(spacing: Theme.Spacing.xs) {
+                    ProgressView().controlSize(.small)
+                    Text("Adding…")
+                        .font(Theme.Font.caption)
+                        .foregroundStyle(Theme.Palette.textSecondary)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.primary)
-                .disabled(title.isEmpty || saving)
             }
         }
-        .padding(Theme.Spacing.lg)
-        .frame(width: 380)
-        .background(Theme.Palette.background)
-        .task { await loadCalendars() }
     }
 
     private func loadCalendars() async {

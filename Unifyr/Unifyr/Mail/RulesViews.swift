@@ -30,33 +30,31 @@ struct SmartMailboxEditorView: View {
     private var isNew: Bool { target.box == nil }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-            Text(isNew ? "New Smart Mailbox" : "Edit Smart Mailbox")
-                .font(Theme.Font.cardTitle)
-
-            HStack(spacing: Theme.Spacing.md) {
-                TextField("Name", text: $name)
-                    .textFieldStyle(.roundedBorder)
-                ColorPicker("", selection: $color, supportsOpacity: false)
-                    .labelsHidden()
+        RecordEditorChrome(title: isNew ? "New Smart Mailbox" : "Edit Smart Mailbox") {
+            Button { save() } label: {
+                Label(isNew ? "Create" : "Save", systemImage: "square.and.arrow.down")
             }
-
-            ConditionFormView(condition: $condition, accounts: accounts)
-
-            HStack {
-                Button("Cancel") { dismiss() }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Theme.Palette.textSecondary)
-                Spacer()
-                Button(isNew ? "Create" : "Save") { save() }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Theme.Palette.primary)
-                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+            .buttonStyle(.fluentToolbar)
+            .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+            Button { dismiss() } label: {
+                Label("Cancel", systemImage: "xmark")
             }
+            .buttonStyle(.fluentToolbar)
+        } content: {
+            VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+                HStack(spacing: Theme.Spacing.md) {
+                    FluentFormField(label: "Name", text: $name)
+                    ColorPicker("", selection: $color, supportsOpacity: false)
+                        .labelsHidden()
+                }
+
+                ConditionFormView(condition: $condition, accounts: accounts)
+
+                Spacer(minLength: 0)
+            }
+            .padding(Theme.Spacing.lg)
         }
-        .padding(Theme.Spacing.lg)
         .frame(width: 420)
-        .background(Theme.Palette.background)
         .onAppear {
             if let box = target.box {
                 name = box.name
@@ -93,36 +91,45 @@ struct RulesManagerView: View {
     @State private var editing: RuleEditorTarget?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            HStack {
-                Text("Rules").font(Theme.Font.cardTitle)
-                Spacer()
-                Button("Done") { dismiss() }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Theme.Palette.primary)
-            }
-
-            Text("Rules run on newly arrived Inbox messages when a mailbox syncs, in order.")
-                .font(Theme.Font.cardCaption)
-                .foregroundStyle(Theme.Palette.textSecondary)
-
-            List {
-                ForEach(rules) { rule in
-                    ruleRow(rule)
-                }
-            }
-            .listStyle(.inset)
-            .frame(minHeight: 180)
-
+        RecordEditorChrome(title: "Rules") {
             Button {
                 editing = RuleEditorTarget(rule: nil)
             } label: {
                 Label("Add Rule", systemImage: "plus")
             }
+            .buttonStyle(.fluentToolbar)
+            Button { dismiss() } label: {
+                Label("Done", systemImage: "checkmark")
+            }
+            .buttonStyle(.fluentToolbar)
+        } content: {
+            VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+                Text("Rules run on newly arrived Inbox messages when a mailbox syncs, in order.")
+                    .font(Theme.Font.cardCaption)
+                    .foregroundStyle(Theme.Palette.textSecondary)
+                    .padding(.horizontal, Theme.Spacing.lg)
+                    .padding(.top, Theme.Spacing.md)
+
+                if rules.isEmpty {
+                    FluentEmptyState(
+                        systemImage: "arrow.branch",
+                        headline: "No rules yet",
+                        subline: "Rules file, tag, or flag new mail for you.",
+                        compact: true
+                    )
+                } else {
+                    List {
+                        ForEach(rules) { rule in
+                            ruleRow(rule)
+                        }
+                    }
+                    .listStyle(.inset)
+                    .scrollContentBackground(.hidden)
+                    .frame(minHeight: 180)
+                }
+            }
         }
-        .padding(Theme.Spacing.lg)
         .frame(width: 480, height: 380)
-        .background(Theme.Palette.background)
         .sheet(item: $editing) { target in
             RuleEditorView(target: target, accounts: accounts)
         }
@@ -187,18 +194,38 @@ struct RuleEditorView: View {
     }
 
     var body: some View {
+        RecordEditorChrome(title: isNew ? "New Rule" : "Edit Rule") {
+            Button { save() } label: {
+                Label(isNew ? "Create" : "Save", systemImage: "square.and.arrow.down")
+            }
+            .buttonStyle(.fluentToolbar)
+            .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || action.isEmpty)
+            Button { dismiss() } label: {
+                Label("Cancel", systemImage: "xmark")
+            }
+            .buttonStyle(.fluentToolbar)
+        } content: {
+            ruleForm
+        }
+        .frame(width: 440, height: 520)
+        .onAppear {
+            if let rule = target.rule {
+                name = rule.name
+                condition = rule.condition
+                action = rule.action
+            }
+        }
+    }
+
+    private var ruleForm: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-                Text(isNew ? "New Rule" : "Edit Rule")
-                    .font(Theme.Font.cardTitle)
+                FluentFormField(label: "Rule name", text: $name)
 
-                TextField("Rule name", text: $name)
-                    .textFieldStyle(.roundedBorder)
-
-                sectionLabel("IF (all that are set)")
+                sectionLabel("If (all that are set)")
                 ConditionFormView(condition: $condition, accounts: accounts)
 
-                sectionLabel("THEN")
+                sectionLabel("Then")
                 VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                     Toggle("Mark as read", isOn: $action.markRead)
                     Toggle("Flag", isOn: $action.flag)
@@ -224,34 +251,15 @@ struct RuleEditorView: View {
                     }
                 }
 
-                HStack {
-                    Button("Cancel") { dismiss() }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(Theme.Palette.textSecondary)
-                    Spacer()
-                    Button(isNew ? "Create" : "Save") { save() }
-                        .buttonStyle(.borderedProminent)
-                        .tint(Theme.Palette.primary)
-                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || action.isEmpty)
-                }
             }
             .padding(Theme.Spacing.lg)
-        }
-        .frame(width: 440, height: 520)
-        .background(Theme.Palette.background)
-        .onAppear {
-            if let rule = target.rule {
-                name = rule.name
-                condition = rule.condition
-                action = rule.action
-            }
         }
     }
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(Theme.Font.cardCaption.weight(.semibold))
-            .foregroundStyle(Theme.Palette.textSecondary)
+            .font(Theme.Font.subtitle)
+            .foregroundStyle(Theme.Palette.textPrimary)
     }
 
     private func save() {
@@ -282,57 +290,59 @@ struct BlockedSendersView: View {
     @State private var newAddress = ""
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("Blocked Senders")
-                .font(Theme.Font.cardTitle)
-                .padding(Theme.Spacing.lg)
-
-            Divider().overlay(Theme.Palette.separator)
-
-            if blocked.isEmpty {
-                EmptyStateLine(text: "No blocked senders. Right-click a message and choose “Block Sender”.")
-                    .padding(Theme.Spacing.lg)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            } else {
-                List {
-                    ForEach(blocked) { sender in
-                        HStack {
-                            Image(systemName: "nosign")
-                                .foregroundStyle(Theme.Palette.danger)
-                            Text(sender.address)
-                                .font(Theme.Font.cardBody)
-                            Spacer()
-                            Button {
-                                context.delete(sender)
-                                try? context.save()
-                            } label: {
-                                Image(systemName: "minus.circle")
-                                    .foregroundStyle(Theme.Palette.textSecondary)
+        RecordEditorChrome(title: "Blocked Senders") {
+            Button { dismiss() } label: {
+                Label("Done", systemImage: "checkmark")
+            }
+            .buttonStyle(.fluentToolbar)
+            .keyboardShortcut(.defaultAction)
+        } content: {
+            VStack(alignment: .leading, spacing: 0) {
+                if blocked.isEmpty {
+                    FluentEmptyState(
+                        systemImage: "nosign",
+                        headline: "No blocked senders",
+                        subline: "Right-click a message and choose “Block Sender”.",
+                        compact: true
+                    )
+                } else {
+                    List {
+                        ForEach(blocked) { sender in
+                            HStack {
+                                Image(systemName: "nosign")
+                                    .foregroundStyle(Theme.Palette.danger)
+                                Text(sender.address)
+                                    .font(Theme.Font.cardBody)
+                                Spacer()
+                                Button {
+                                    context.delete(sender)
+                                    try? context.save()
+                                } label: {
+                                    Image(systemName: "minus.circle")
+                                        .foregroundStyle(Theme.Palette.textSecondary)
+                                }
+                                .buttonStyle(.plain)
+                                .help("Unblock")
                             }
-                            .buttonStyle(.plain)
-                            .help("Unblock")
                         }
                     }
+                    .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                 }
-                .listStyle(.plain)
-            }
 
-            Divider().overlay(Theme.Palette.separator)
+                Rectangle().fill(Theme.Palette.separator).frame(height: 1)
 
-            HStack(spacing: Theme.Spacing.sm) {
-                TextField("email@example.com", text: $newAddress)
-                    .textFieldStyle(.roundedBorder)
-                    .onSubmit(addManually)
-                Button("Block", action: addManually)
-                    .disabled(!newAddress.contains("@"))
-                Spacer()
-                Button("Done") { dismiss() }
-                    .keyboardShortcut(.defaultAction)
+                HStack(spacing: Theme.Spacing.sm) {
+                    FluentFormField(label: "", text: $newAddress, prompt: "email@example.com")
+                        .onSubmit(addManually)
+                    Button("Block", action: addManually)
+                        .buttonStyle(.fluentSecondary)
+                        .disabled(!newAddress.contains("@"))
+                }
+                .padding(Theme.Spacing.lg)
             }
-            .padding(Theme.Spacing.lg)
         }
         .frame(width: 420, height: 380)
-        .background(Theme.Palette.background)
     }
 
     private func addManually() {
