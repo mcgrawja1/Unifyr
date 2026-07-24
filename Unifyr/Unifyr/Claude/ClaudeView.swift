@@ -26,12 +26,11 @@ struct ClaudeView: View {
         Group {
             if let mcp, let automationContainer {
                 VStack(spacing: 0) {
-                    Picker("", selection: $pane) {
-                        ForEach(Pane.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-                    }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .frame(maxWidth: 280)
+                    FluentSegmentedControl(
+                        selection: $pane,
+                        options: Pane.allCases.map { ($0, $0.rawValue) },
+                        accent: Theme.Palette.claude
+                    )
                     .padding(.vertical, Theme.Spacing.sm)
 
                     switch pane {
@@ -138,8 +137,7 @@ private struct ClaudeContent: View {
                         copied = true
                         Task { try? await Task.sleep(for: .seconds(2)); copied = false }
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Theme.Palette.claude)
+                    .buttonStyle(.fluentClaude)
 
                     Button("Open Config Folder") {
                         #if os(macOS)

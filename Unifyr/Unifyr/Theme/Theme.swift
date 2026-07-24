@@ -56,6 +56,12 @@ enum Theme {
             light: Color(hex: 0xB45309),
             dark: Color(hex: 0xF2A65A)
         )
+        /// Text/icons on a `claude`-filled control (dark amber is light, so
+        /// it takes dark text where the blue channel takes white).
+        static let textOnClaude = Color(
+            light: Color(hex: 0xFFFFFF),
+            dark: Color(hex: 0x291805)
+        )
 
         // Surfaces
         /// App wash behind panes (the visible gutter between cards).

@@ -60,7 +60,7 @@ struct UniversalSearchView: View {
                     .foregroundStyle(Theme.Palette.textSecondary)
                 TextField("Search Unifyr — notes, mail, events, reminders, contacts, messages, files…", text: $query)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 16))
+                    .font(Theme.Font.subtitle.weight(.regular))
                     .focused($fieldFocused)
                     .onSubmit {
                         if let first = hits.first { pick(first) }

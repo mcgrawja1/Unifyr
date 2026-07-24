@@ -44,21 +44,23 @@ extension View {
 
 // MARK: - Buttons
 
-/// Filled brand button — "New Mail", "Save", "Connect".
+/// Filled brand button — "New Mail", "Save", "Connect". The `claude`
+/// variant swaps in the amber AI channel (never mix the two on one surface).
 struct FluentPrimaryButtonStyle: ButtonStyle {
+    var fill: Color = Theme.Palette.primaryFill
+    var pressedFill: Color = Theme.Palette.primaryFillHover
+    var labelColor: Color = Theme.Palette.textOnAccent
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Theme.Font.bodyStrong)
-            .foregroundStyle(Theme.Palette.textOnAccent)
+            .foregroundStyle(labelColor)
             .padding(.horizontal, Theme.Spacing.md)
             .frame(height: Theme.Metrics.buttonHeight)
             .background(
                 RoundedRectangle(cornerRadius: Theme.Radius.md)
-                    .fill(configuration.isPressed
-                          ? Theme.Palette.primaryFillHover
-                          : Theme.Palette.primaryFill)
+                    .fill(configuration.isPressed ? pressedFill : fill)
             )
             .opacity(isEnabled ? 1 : 0.5)
             .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
@@ -108,6 +110,14 @@ struct FluentToolbarButtonStyle: ButtonStyle {
 
 extension ButtonStyle where Self == FluentPrimaryButtonStyle {
     static var fluentPrimary: FluentPrimaryButtonStyle { .init() }
+    /// AI-surface variant: amber channel fill (Claude chat, briefing).
+    static var fluentClaude: FluentPrimaryButtonStyle {
+        .init(
+            fill: Theme.Palette.claude,
+            pressedFill: Theme.Palette.claude.opacity(0.85),
+            labelColor: Theme.Palette.textOnClaude
+        )
+    }
 }
 extension ButtonStyle where Self == FluentSecondaryButtonStyle {
     static var fluentSecondary: FluentSecondaryButtonStyle { .init() }
@@ -156,6 +166,8 @@ struct CommandBar<Leading: View, Trailing: View>: View {
 struct FluentSegmentedControl<Value: Hashable>: View {
     @Binding var selection: Value
     let options: [(value: Value, label: String)]
+    /// Selected-label color — the amber channel on AI surfaces.
+    var accent: Color = Theme.Palette.primary
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -171,7 +183,7 @@ struct FluentSegmentedControl<Value: Hashable>: View {
                 } label: {
                     Text(option.label)
                         .font(isSelected ? Theme.Font.bodyStrong : Theme.Font.body)
-                        .foregroundStyle(isSelected ? Theme.Palette.primary : Theme.Palette.textSecondary)
+                        .foregroundStyle(isSelected ? accent : Theme.Palette.textSecondary)
                         .padding(.horizontal, Theme.Spacing.md)
                         .frame(height: Theme.Metrics.controlHeight - Theme.Spacing.xs)
                         .background(

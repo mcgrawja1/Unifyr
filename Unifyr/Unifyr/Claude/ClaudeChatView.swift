@@ -152,10 +152,9 @@ struct ClaudeChatView: View {
             HStack(spacing: Theme.Spacing.sm) {
                 Spacer()
                 Button("Cancel") { controller.resolveConfirmation(false) }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.fluentSecondary)
                 Button("Confirm") { controller.resolveConfirmation(true) }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Theme.Palette.claude)
+                    .buttonStyle(.fluentClaude)
             }
         }
         .padding(Theme.Spacing.md)
@@ -258,8 +257,7 @@ struct ClaudeChatView: View {
                             .foregroundStyle(Theme.Palette.textSecondary)
                         HStack(spacing: Theme.Spacing.md) {
                             Button("Add API Key…") { showingSettings = true }
-                                .buttonStyle(.borderedProminent)
-                                .tint(Theme.Palette.claude)
+                                .buttonStyle(.fluentClaude)
                             Button("Get a key at console.anthropic.com") {
                                 PlatformKit.open(URL(string: "https://console.anthropic.com/settings/keys")!)
                             }
@@ -357,8 +355,7 @@ struct ClaudeSettingsView: View {
                     controller.refreshKeyState()
                     dismiss()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.claude)
+                .buttonStyle(.fluentClaude)
             }
         }
         .padding(Theme.Spacing.lg)
