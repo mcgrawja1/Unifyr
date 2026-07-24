@@ -106,17 +106,16 @@ private struct EventRow: View {
     }
 }
 
-/// Small pill showing a count; reused by the cards.
+/// Right-aligned count in the accent color (Outlook nav-pane style: plain
+/// text, no pill); reused by the cards and the Mail sidebar.
 struct CountBadge: View {
     let count: Int
     var accent: Color = Theme.Palette.primary
 
     var body: some View {
         Text("\(count)")
-            .font(Theme.Font.cardCaption.weight(.semibold))
+            .font(Theme.Font.caption.weight(.semibold))
             .foregroundStyle(accent)
-            .padding(.horizontal, Theme.Spacing.sm)
-            .padding(.vertical, Theme.Spacing.xxs)
-            .background(accent.opacity(0.12), in: Capsule())
+            .monospacedDigit()
     }
 }

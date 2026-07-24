@@ -27,11 +27,11 @@ struct QuickCaptureCard: View {
     var body: some View {
         DashboardCard(title: "Quick Capture", systemImage: "square.and.pencil", accent: Theme.Palette.primary) {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                Picker("Capture as", selection: $mode) {
-                    ForEach(Mode.allCases) { Text($0.rawValue).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
+                FluentSegmentedControl(
+                    selection: $mode,
+                    options: Mode.allCases.map { ($0, $0.rawValue) }
+                )
+                .accessibilityLabel("Capture as")
 
                 HStack(spacing: Theme.Spacing.sm) {
                     TextField(mode == .note ? "New note…" : "New reminder…", text: $text, axis: .vertical)
