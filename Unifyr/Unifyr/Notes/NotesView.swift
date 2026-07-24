@@ -84,7 +84,7 @@ struct NotesView: View {
             } else {
                 PlatformHSplit {
                     listPane
-                        .frame(minWidth: 240, idealWidth: 280, maxWidth: 360)
+                        .frame(minWidth: 200, idealWidth: Theme.Metrics.navPaneWidth, maxWidth: 360)
                     detailPane
                         .frame(minWidth: 380)
                 }
@@ -201,15 +201,27 @@ struct NotesView: View {
 
     private var listPane: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // Outlook nav-pane header: primary action + secondary icon.
             HStack(spacing: Theme.Spacing.sm) {
-                Text("Notes").font(Theme.Font.cardTitle)
-                Spacer()
-                Button(action: { addDatabase(parent: nil) }) { Image(systemName: "tablecells") }
-                    .buttonStyle(.plain).help("New Database")
-                Button(action: { addPage(parent: nil) }) { Image(systemName: "square.and.pencil") }
-                    .buttonStyle(.plain).help("New Page")
+                Button(action: { addPage(parent: nil) }) {
+                    Label("New Page", systemImage: "square.and.pencil")
+                }
+                .buttonStyle(.fluentPrimary)
+                .help("New Page")
+                Button(action: { addDatabase(parent: nil) }) {
+                    Image(systemName: "tablecells")
+                        .font(.system(size: Theme.Metrics.iconInline))
+                        .foregroundStyle(Theme.Palette.textSecondary)
+                        .frame(width: Theme.Metrics.buttonHeight, height: Theme.Metrics.buttonHeight)
+                        .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.sm))
+                }
+                .buttonStyle(.plain)
+                .fluentHover()
+                .help("New Database")
+                Spacer(minLength: 0)
             }
-            .padding(Theme.Spacing.md)
+            .padding(.horizontal, Theme.Spacing.sm)
+            .padding(.vertical, Theme.Spacing.sm)
 
             List(selection: $selectedNote) {
                 if !favorites.isEmpty {
@@ -323,8 +335,10 @@ struct NotesView: View {
                 }
             }
             .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
+            .tint(Theme.Palette.primary)
         }
-        .background(Theme.Palette.surface)
+        .background(isCompact ? Theme.Palette.surface : Theme.Palette.navPane)
     }
 
     // MARK: Tree flattening
@@ -544,16 +558,15 @@ struct NotesView: View {
         if let selectedNote {
             pageHost(selectedNote)
         } else {
-            VStack(spacing: Theme.Spacing.md) {
-                Image(systemName: "doc.text")
-                    .font(.system(size: 42))
-                    .foregroundStyle(Theme.Palette.textSecondary)
-                Text("Select or create a page")
-                    .font(Theme.Font.cardTitle)
-                    .foregroundStyle(Theme.Palette.textPrimary)
+            VStack(spacing: Theme.Spacing.lg) {
+                FluentEmptyState(
+                    systemImage: "doc.text",
+                    headline: "Select or create a page",
+                    subline: "Your pages live in the tree on the left."
+                )
+                .frame(maxHeight: 260)
                 Button("New Page") { addPage(parent: nil) }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Theme.Palette.primary)
+                    .buttonStyle(.fluentPrimary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -689,8 +702,7 @@ private struct PageHost: View {
                                 .font(Theme.Font.cardCaption)
                                 .foregroundStyle(Theme.Palette.textOnAccent)
                             Button("Done") { repositioningCover = false }
-                                .buttonStyle(.borderedProminent)
-                                .tint(Theme.Palette.primary)
+                                .buttonStyle(.fluentPrimary)
                                 .controlSize(.small)
                         }
                         .padding(Theme.Spacing.sm)

@@ -109,7 +109,7 @@ html, body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(74, 144, 217, 0.12);
+  background: rgba(15, 108, 189, 0.12);
   pointer-events: none;
 }
 
@@ -172,7 +172,7 @@ html, body {
   border-radius: 4px;
   cursor: pointer;
 }
-.slash-item.selected { background: rgba(62, 142, 247, 0.18); }
+.slash-item.selected { background: rgba(15, 108, 189, 0.16); }
 .slash-title { font-size: 13px; font-weight: 500; }
 .slash-hint { font-size: 11px; color: var(--hv-secondary); }
 
@@ -292,7 +292,7 @@ html, body {
 .ProseMirror .page-mention {
   display: inline;
   padding: 1px 5px;
-  border-radius: 5px;
+  border-radius: 4px;
   background: var(--hv-code-bg);
   cursor: pointer;
   white-space: nowrap;
@@ -383,8 +383,8 @@ body.wide .ProseMirror {
   z-index: 60;
   background: Canvas;
   border: 1px solid var(--hv-rule);
-  border-radius: 10px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
   padding: 8px;
   width: 264px;
 }
@@ -504,7 +504,7 @@ body.wide .ProseMirror {
   background: Canvas;
   border: 1px solid var(--hv-rule);
   border-radius: 8px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
   padding: 4px;
   min-width: 160px;
   max-height: 260px;
@@ -562,8 +562,8 @@ body.wide .ProseMirror {
 .bookmark-prompt-box {
   background: Canvas;
   border: 1px solid var(--hv-rule);
-  border-radius: 10px;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.22);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
   padding: 14px;
   width: 340px;
 }
@@ -605,7 +605,7 @@ body.wide .ProseMirror {
   background: Canvas;
   border: 1px solid var(--hv-rule);
   border-radius: 999px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
   padding: 8px 16px;
   font: 13px -apple-system, system-ui, sans-serif;
   color: var(--hv-text);
@@ -626,7 +626,7 @@ body.wide .ProseMirror {
   cursor: pointer;
   font-size: 13px;
   padding: 4px 6px;
-  border-radius: 5px;
+  border-radius: 4px;
   opacity: 0;
   transition: opacity 0.12s ease;
 }
