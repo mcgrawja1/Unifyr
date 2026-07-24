@@ -422,6 +422,7 @@ struct FluentFormField: View {
     @Binding var text: String
     var prompt: String = ""
     var systemImage: String?
+    var secure: Bool = false
 
     @FocusState private var focused: Bool
 
@@ -440,12 +441,18 @@ struct FluentFormField: View {
                         .font(Theme.Font.label)
                         .foregroundStyle(focused ? Theme.Palette.primary : Theme.Palette.textSecondary)
                 }
-                TextField(prompt.isEmpty ? label : prompt, text: $text)
-                    .textFieldStyle(.plain)
-                    .font(Theme.Font.body)
-                    .foregroundStyle(Theme.Palette.textPrimary)
-                    .focused($focused)
-                    .padding(.bottom, Theme.Spacing.xs)
+                Group {
+                    if secure {
+                        SecureField(prompt.isEmpty ? label : prompt, text: $text)
+                    } else {
+                        TextField(prompt.isEmpty ? label : prompt, text: $text)
+                    }
+                }
+                .textFieldStyle(.plain)
+                .font(Theme.Font.body)
+                .foregroundStyle(Theme.Palette.textPrimary)
+                .focused($focused)
+                .padding(.bottom, Theme.Spacing.xs)
                 Rectangle()
                     .fill(focused ? Theme.Palette.primary : Theme.Palette.separator)
                     .frame(height: focused ? 2 : 1)

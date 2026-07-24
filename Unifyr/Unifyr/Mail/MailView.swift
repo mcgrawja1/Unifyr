@@ -20,8 +20,11 @@ struct MailView: View {
                 MailModuleContent()
                     .modelContainer(mailContainer)
             } else {
-                Text("Mail store unavailable.")
-                    .foregroundStyle(Theme.Palette.textSecondary)
+                FluentEmptyState(
+                    systemImage: "envelope.badge.shield.half.filled",
+                    headline: "Mail store unavailable",
+                    subline: "The local mail cache could not be opened."
+                )
             }
         }
         .navigationTitle("Mail")
@@ -173,22 +176,21 @@ private struct MailModuleContent: View {
     private var mailboxLayout: some View {
         Group {
             if isCompact {
+                // iPhone keeps the native nav-bar search field.
                 compactPanes
+                    .searchable(text: $searchText, placement: .toolbar, prompt: "Search mail")
+                    .onSubmit(of: .search) { runServerSearch() }
             } else {
-                regularPanes
-            }
-        }
-        .background(Theme.Palette.background)
-        // Search lives in the window toolbar (like Apple Mail) so no pane
-        // spends a row on it — the message list starts at the top.
-        .searchable(text: $searchText, placement: .toolbar, prompt: "Search mail")
-        .onSubmit(of: .search) {
-            Task {
-                for (account, path) in selectedFolders() {
-                    await service.search(account, mailboxPath: path, query: searchText)
+                // Mac/iPad: command bar over the three panes; search moved
+                // into the message-list pane header (the window toolbar is
+                // gone under the Outlook chrome).
+                VStack(spacing: 0) {
+                    commandBar
+                    regularPanes
                 }
             }
         }
+        .background(Theme.Palette.background)
         .onChange(of: searchText) { _, newValue in
             if newValue.isEmpty { Task { await syncSelection() } }
         }
@@ -231,6 +233,7 @@ private struct MailModuleContent: View {
         .toolbar {
             // A phone nav bar can't hold five buttons — on compact, everything
             // but Compose and Refresh collapses into one overflow menu.
+            // (Regular widths use the custom command bar instead.)
             if isCompact {
                 ToolbarItem {
                     Button { composeSheet = ComposeSheet(mode: .new) } label: { Image(systemName: "square.and.pencil") }
@@ -248,41 +251,6 @@ private struct MailModuleContent: View {
                         Divider()
                         Button("Re-download Messages") { Task { await clearCacheAndReload() } }
                     } label: { Image(systemName: "ellipsis.circle") }
-                }
-            } else {
-                ToolbarItem {
-                    Button {
-                        withAnimation { mailboxPaneCollapsed.toggle() }
-                    } label: { Image(systemName: "sidebar.leading") }
-                    .help(mailboxPaneCollapsed ? "Show Mailbox List (⌃⌘M)" : "Hide Mailbox List (⌃⌘M)")
-                    .keyboardShortcut("m", modifiers: [.control, .command])
-                }
-                ToolbarItem {
-                    Button { composeSheet = ComposeSheet(mode: .new) } label: { Image(systemName: "square.and.pencil") }
-                        .help("Compose")
-                }
-                ToolbarItem {
-                    refreshButton
-                }
-                ToolbarItem {
-                    Button {
-                        Task { await clearCacheAndReload() }
-                    } label: { Image(systemName: "arrow.triangle.2.circlepath.circle") }
-                    .help("Clear cached messages and re-download")
-                }
-                ToolbarItem {
-                    Menu {
-                        Button("New Smart Mailbox…") { smartEditor = SmartMailboxEditorTarget(box: nil) }
-                        Button("Manage Rules…") { showingRules = true }
-                        Button("Blocked Senders…") { showingBlockedSenders = true }
-                        Divider()
-                        Toggle("Block Remote Images", isOn: $blockRemoteImages)
-                    } label: { Image(systemName: "slider.horizontal.3") }
-                    .help("Smart Mailboxes & Rules")
-                }
-                ToolbarItem {
-                    Button { addingAccount = true } label: { Image(systemName: "person.crop.circle.badge.plus") }
-                        .help("Add Account")
                 }
             }
         }
@@ -309,6 +277,115 @@ private struct MailModuleContent: View {
         }
     }
 
+    // MARK: Command bar (regular widths)
+
+    /// ⏎ in the search field: server-side search pulls matches into the cache.
+    private func runServerSearch() {
+        Task {
+            for (account, path) in selectedFolders() {
+                await service.search(account, mailboxPath: path, query: searchText)
+            }
+        }
+    }
+
+    /// The account owning the selected message (command-bar actions target
+    /// the selected message, exactly like the row context menu).
+    private var selectedMessageAccount: MailAccount? {
+        guard let selectedMessage else { return nil }
+        return accounts.first { $0.id == selectedMessage.accountID }
+    }
+
+    /// Outlook command bar: message actions leading (disabled without a
+    /// selection — visible, not hidden), view controls trailing. Every action
+    /// here already exists on the row context menu or the old toolbar.
+    private var commandBar: some View {
+        CommandBar {
+            Button {
+                guard let selectedMessage else { return }
+                Task { await deleteMessage(selectedMessage) }
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+            .buttonStyle(.fluentToolbar)
+            .disabled(selectedMessage == nil)
+
+            Button {
+                guard let selectedMessage, let account = selectedMessageAccount else { return }
+                Task { await service.setFlagged(selectedMessage, account: account, flagged: !selectedMessage.isFlagged) }
+            } label: {
+                Label(
+                    selectedMessage?.isFlagged == true ? "Unflag" : "Flag",
+                    systemImage: selectedMessage?.isFlagged == true ? "flag.slash" : "flag"
+                )
+            }
+            .buttonStyle(.fluentToolbar)
+            .disabled(selectedMessage == nil)
+
+            Button {
+                guard let selectedMessage, let account = selectedMessageAccount else { return }
+                Task { await service.setSeen(selectedMessage, account: account, seen: !selectedMessage.isSeen) }
+            } label: {
+                Label(
+                    selectedMessage?.isSeen == false ? "Mark Read" : "Mark Unread",
+                    systemImage: selectedMessage?.isSeen == false ? "envelope.open" : "envelope.badge"
+                )
+            }
+            .buttonStyle(.fluentToolbar)
+            .disabled(selectedMessage == nil)
+
+            Button {
+                Task { await syncSelection(quiet: false) }
+            } label: {
+                if service.isBusy {
+                    Label {
+                        Text("Sync")
+                    } icon: {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(width: Theme.Metrics.iconInline, height: Theme.Metrics.iconInline)
+                    }
+                } else {
+                    Label("Sync", systemImage: "arrow.clockwise")
+                }
+            }
+            .buttonStyle(.fluentToolbar)
+            .disabled(service.isBusy)
+            .help("Refresh")
+
+            Menu {
+                Button("New Smart Mailbox…") { smartEditor = SmartMailboxEditorTarget(box: nil) }
+                Button("Manage Rules…") { showingRules = true }
+                Button("Blocked Senders…") { showingBlockedSenders = true }
+                Divider()
+                Toggle("Block Remote Images", isOn: $blockRemoteImages)
+                Divider()
+                Button("Add Account…") { addingAccount = true }
+                Button("Re-download Messages") { Task { await clearCacheAndReload() } }
+            } label: {
+                Label("More", systemImage: "ellipsis")
+                    .labelStyle(.iconOnly)
+                    .frame(width: Theme.Metrics.iconToolbar + Theme.Spacing.sm, height: Theme.Metrics.buttonHeight)
+            }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .foregroundStyle(Theme.Palette.textPrimary)
+            .fluentHover()
+            .help("Smart Mailboxes, Rules & More")
+        } trailing: {
+            Button {
+                withAnimation(Theme.Motion.surface) { mailboxPaneCollapsed.toggle() }
+            } label: {
+                Label("Mailboxes", systemImage: "sidebar.leading")
+                    .labelStyle(.iconOnly)
+                    .frame(width: Theme.Metrics.iconToolbar + Theme.Spacing.sm, height: Theme.Metrics.buttonHeight)
+            }
+            .buttonStyle(.fluentToolbar)
+            .help(mailboxPaneCollapsed ? "Show Mailbox List (⌃⌘M)" : "Hide Mailbox List (⌃⌘M)")
+            .keyboardShortcut("m", modifiers: [.control, .command])
+        }
+    }
+
     // MARK: Panes
 
     /// Mac / iPad: all three panes side by side. Default proportions —
@@ -318,7 +395,7 @@ private struct MailModuleContent: View {
             PlatformHSplit {
                 if !mailboxPaneCollapsed {
                     mailboxPane
-                        .frame(minWidth: 105, idealWidth: geometry.size.width * 0.049, maxWidth: 300)
+                        .frame(minWidth: 170, idealWidth: Theme.Metrics.navPaneWidth, maxWidth: 320)
                 }
                 messageListPane
                     .frame(minWidth: 220, idealWidth: geometry.size.width * 0.20, maxWidth: 520)
@@ -364,6 +441,33 @@ private struct MailModuleContent: View {
 
     private var mailboxPane: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // Outlook nav pane header: hamburger + the module's primary action.
+            if !isCompact {
+                HStack(spacing: Theme.Spacing.sm) {
+                    Button {
+                        withAnimation(Theme.Motion.surface) { mailboxPaneCollapsed.toggle() }
+                    } label: {
+                        Image(systemName: "line.3.horizontal")
+                            .font(.system(size: Theme.Metrics.iconInline))
+                            .foregroundStyle(Theme.Palette.textSecondary)
+                            .frame(width: Theme.Metrics.controlHeight, height: Theme.Metrics.controlHeight)
+                            .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.sm))
+                    }
+                    .buttonStyle(.plain)
+                    .fluentHover()
+                    .help("Hide Mailbox List (⌃⌘M)")
+                    Button {
+                        composeSheet = ComposeSheet(mode: .new)
+                    } label: {
+                        Label("New Mail", systemImage: "square.and.pencil")
+                    }
+                    .buttonStyle(.fluentPrimary)
+                    .help("Compose")
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, Theme.Spacing.sm)
+            }
             statusBanner
             List(selection: $selection) {
                 if accounts.count > 1 {
@@ -472,16 +576,36 @@ private struct MailModuleContent: View {
                 }
             }
             .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
+            .tint(Theme.Palette.primary)
             .onChange(of: selection) { _, _ in
                 selectedMessage = nil
                 Task { await syncSelection() }
             }
         }
-        .background(Theme.Palette.surface)
+        .background(isCompact ? Theme.Palette.surface : Theme.Palette.navPane)
     }
 
     private var messageListPane: some View {
         VStack(spacing: 0) {
+            // Regular widths: in-pane search (the window toolbar is gone
+            // under the Outlook chrome; ⏎ still runs the server search).
+            if !isCompact {
+                FluentSearchField(text: $searchText, prompt: "Search mail")
+                    .onSubmit { runServerSearch() }
+                    .padding(.horizontal, Theme.Spacing.sm)
+                    .padding(.vertical, Theme.Spacing.sm)
+            }
+            if visibleMessages.isEmpty {
+                FluentEmptyState(
+                    systemImage: searchText.isEmpty ? "tray" : "magnifyingglass",
+                    headline: searchText.isEmpty ? "Nothing here" : "No results",
+                    subline: searchText.isEmpty
+                        ? "No messages in this mailbox."
+                        : "No cached messages match — press ⏎ to search the server.",
+                    compact: true
+                )
+            }
             List(selection: $selectedMessage) {
                 ForEach(visibleMessages) { message in
                     let badge = originBadge(for: message)
@@ -509,8 +633,9 @@ private struct MailModuleContent: View {
             .refreshable {
                 await syncSelection(quiet: false)
             }
+            .scrollContentBackground(.hidden)
         }
-        .background(Theme.Palette.surface)
+        .background(Theme.Palette.pane)
     }
 
     private var detailPane: some View {
@@ -537,15 +662,11 @@ private struct MailModuleContent: View {
             )
             .id(selectedMessage.id)
         } else {
-            VStack(spacing: Theme.Spacing.md) {
-                Image(systemName: "envelope.open")
-                    .font(.system(size: 42))
-                    .foregroundStyle(Theme.Palette.textSecondary)
-                Text("Select a message")
-                    .font(Theme.Font.cardTitle)
-                    .foregroundStyle(Theme.Palette.textPrimary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            FluentEmptyState(
+                systemImage: "envelope.open",
+                headline: "Select a message",
+                subline: "Nothing is selected."
+            )
         }
     }
 
@@ -628,7 +749,12 @@ private struct MailModuleContent: View {
         }
         .foregroundStyle(Theme.Palette.warning)
         .padding(Theme.Spacing.sm)
-        .background(Theme.Palette.warning.opacity(0.12))
+        .background(
+            RoundedRectangle(cornerRadius: Theme.Radius.sm)
+                .fill(Theme.Palette.warning.opacity(0.12))
+        )
+        .padding(.horizontal, Theme.Spacing.sm)
+        .padding(.top, Theme.Spacing.xs)
     }
 
     private func banner(_ text: String, systemImage: String, tint: Color) -> some View {
@@ -639,7 +765,12 @@ private struct MailModuleContent: View {
         }
         .foregroundStyle(tint)
         .padding(Theme.Spacing.sm)
-        .background(tint.opacity(0.1))
+        .background(
+            RoundedRectangle(cornerRadius: Theme.Radius.sm)
+                .fill(tint.opacity(0.1))
+        )
+        .padding(.horizontal, Theme.Spacing.sm)
+        .padding(.top, Theme.Spacing.xs)
     }
 
     // MARK: Message actions
@@ -966,7 +1097,7 @@ private struct MessageDetailView: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 Text(message.subject)
-                    .font(Theme.Font.dashboardTitle)
+                    .font(Theme.Font.title)
                     .foregroundStyle(Theme.Palette.textPrimary)
                 HStack(spacing: Theme.Spacing.sm) {
                     VStack(alignment: .leading, spacing: 2) {

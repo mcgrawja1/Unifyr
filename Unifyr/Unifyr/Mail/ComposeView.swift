@@ -99,10 +99,69 @@ struct ComposeView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-            Divider().overlay(Theme.Palette.separator)
+        RecordEditorChrome(
+            title: subject.isEmpty ? "New Message" : subject,
+            subtitle: fromAccount?.emailAddress
+        ) {
+            Button {
+                confirming = true
+            } label: {
+                if sending {
+                    Label {
+                        Text("Send")
+                    } icon: {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(width: Theme.Metrics.iconInline, height: Theme.Metrics.iconInline)
+                    }
+                } else {
+                    Label("Send", systemImage: "paperplane")
+                }
+            }
+            .buttonStyle(.fluentToolbar)
+            .disabled(!canSend || sending)
+            .keyboardShortcut(.defaultAction)
 
+            Button(action: attachFiles) {
+                Label("Attach", systemImage: "paperclip")
+            }
+            .buttonStyle(.fluentToolbar)
+            .help("Attach Files…")
+
+            Button {
+                dismiss()
+            } label: {
+                Label("Discard", systemImage: "trash")
+            }
+            .buttonStyle(.fluentToolbar)
+        } content: {
+            composeBody
+        }
+        // A fixed 560×480 sheet is right on a Mac window and wrong on a phone —
+        // let compact layouts fill the screen.
+        .frame(
+            width: isCompact ? nil : 560,
+            height: isCompact ? nil : 480
+        )
+        .frame(maxWidth: isCompact ? .infinity : nil, maxHeight: isCompact ? .infinity : nil)
+        .confirmationDialog("Send this message?", isPresented: $confirming, titleVisibility: .visible) {
+            Button("Send") { Task { await performSend() } }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("To: \(to)")
+        }
+        .fileImporter(
+            isPresented: $showingAttachImporter,
+            allowedContentTypes: [.item],
+            allowsMultipleSelection: true
+        ) { result in
+            guard case .success(let urls) = result else { return }
+            for url in urls { attach(url) }
+        }
+    }
+
+    private var composeBody: some View {
+        VStack(spacing: 0) {
             VStack(spacing: 0) {
                 if accounts.count > 1 {
                     HStack(spacing: Theme.Spacing.sm) {
@@ -177,60 +236,6 @@ struct ComposeView: View {
                     .padding(.bottom, Theme.Spacing.sm)
             }
         }
-        // A fixed 560×480 sheet is right on a Mac window and wrong on a phone —
-        // let compact layouts fill the screen.
-        .frame(
-            width: isCompact ? nil : 560,
-            height: isCompact ? nil : 480
-        )
-        .frame(maxWidth: isCompact ? .infinity : nil, maxHeight: isCompact ? .infinity : nil)
-        .background(Theme.Palette.background)
-        .confirmationDialog("Send this message?", isPresented: $confirming, titleVisibility: .visible) {
-            Button("Send") { Task { await performSend() } }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("To: \(to)")
-        }
-        .fileImporter(
-            isPresented: $showingAttachImporter,
-            allowedContentTypes: [.item],
-            allowsMultipleSelection: true
-        ) { result in
-            guard case .success(let urls) = result else { return }
-            for url in urls { attach(url) }
-        }
-    }
-
-    private var header: some View {
-        HStack {
-            Button("Cancel") { dismiss() }
-                .buttonStyle(.plain)
-                .foregroundStyle(Theme.Palette.textSecondary)
-            Button(action: attachFiles) {
-                Image(systemName: "paperclip")
-                    .foregroundStyle(Theme.Palette.textSecondary)
-            }
-            .buttonStyle(.plain)
-            .help("Attach Files…")
-            Spacer()
-            Text(subject.isEmpty ? "New Message" : subject)
-                .font(Theme.Font.cardTitle)
-                .lineLimit(1)
-            Spacer()
-            Button {
-                confirming = true
-            } label: {
-                HStack(spacing: Theme.Spacing.xs) {
-                    if sending { ProgressView().controlSize(.small) }
-                    Text("Send")
-                }
-                .foregroundStyle(canSend ? Theme.Palette.primary : Theme.Palette.textSecondary)
-                .fontWeight(.semibold)
-            }
-            .buttonStyle(.plain)
-            .disabled(!canSend || sending)
-        }
-        .padding(Theme.Spacing.md)
     }
 
     private var canSend: Bool {

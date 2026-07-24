@@ -38,40 +38,48 @@ struct AccountSettingsView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-                header
-                serverSection
-                passwordSection
-                badgeSection
-                signatureSection
+        RecordEditorChrome(title: account.emailAddress) {
+            Button(action: save) {
+                Label("Save", systemImage: "square.and.arrow.down")
             }
-            .padding(Theme.Spacing.lg)
+            .buttonStyle(.fluentToolbar)
+            Button {
+                dismiss()
+            } label: {
+                Label("Cancel", systemImage: "xmark")
+            }
+            .buttonStyle(.fluentToolbar)
+        } content: {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Theme.Spacing.lg2) {
+                    serverSection
+                    sectionRule
+                    passwordSection
+                    sectionRule
+                    badgeSection
+                    sectionRule
+                    signatureSection
+                }
+                .padding(Theme.Spacing.lg2)
+            }
         }
         .frame(idealWidth: 480, idealHeight: 520)
         // A fixed width would overflow an iPhone; only pin it where there's room.
         .frame(maxWidth: isCompact ? .infinity : 520)
-        .background(Theme.Palette.background)
         .onAppear {
             badgeColor = Color(hexString: account.badgeColorHex) ?? Theme.Palette.primary
             originalServers = currentServers
         }
     }
 
-    private var header: some View {
-        HStack {
-            Text(account.emailAddress)
-                .font(Theme.Font.cardTitle)
-            Spacer()
-            Button("Done", action: save)
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.primary)
-        }
+    /// 1px rule between record-editor sections.
+    private var sectionRule: some View {
+        Rectangle().fill(Theme.Palette.separator).frame(height: 1)
     }
 
     private var serverSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            sectionLabel("SERVERS")
+            sectionLabel("Servers")
             serverRow("IMAP", host: $account.imapHost, port: $account.imapPort)
             serverRow("SMTP", host: $account.smtpHost, port: $account.smtpPort)
             Text("If your domain's mail is hosted by iCloud, these are imap.mail.me.com and smtp.mail.me.com — not imap.\(domainFallback). For Google, imap.gmail.com and smtp.gmail.com.")
@@ -82,7 +90,7 @@ struct AccountSettingsView: View {
 
     private var passwordSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            sectionLabel("PASSWORD")
+            sectionLabel("Password")
             SecureField("Leave blank to keep the current one", text: $newPassword)
                 .textFieldStyle(.roundedBorder)
             Text("Stored in iCloud Keychain, so changing it here updates your other devices too.")
@@ -93,7 +101,7 @@ struct AccountSettingsView: View {
 
     private var badgeSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            sectionLabel("BADGE")
+            sectionLabel("Badge")
             HStack(spacing: Theme.Spacing.md) {
                 TextField(domainFallback, text: $account.badgeLabel)
                     .textFieldStyle(.roundedBorder)
@@ -120,7 +128,7 @@ struct AccountSettingsView: View {
 
     private var signatureSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            sectionLabel("SIGNATURE")
+            sectionLabel("Signature")
             TextEditor(text: $account.signature)
                 .font(Theme.Font.cardBody)
                 .scrollContentBackground(.hidden)
@@ -135,8 +143,8 @@ struct AccountSettingsView: View {
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(Theme.Font.cardCaption.weight(.semibold))
-            .foregroundStyle(Theme.Palette.textSecondary)
+            .font(Theme.Font.subtitle)
+            .foregroundStyle(Theme.Palette.textPrimary)
     }
 
     private func serverRow(_ label: String, host: Binding<String>, port: Binding<Int>) -> some View {

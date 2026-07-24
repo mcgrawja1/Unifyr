@@ -61,23 +61,17 @@ struct AccountSetupView: View {
                 }
                 .tint(Theme.Palette.primary)
 
-                Button(action: save) {
-                    Text("Add Account")
-                        .font(Theme.Font.cardBody.weight(.medium))
-                        .foregroundStyle(Theme.Palette.textOnAccent)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, Theme.Spacing.sm)
-                        .background(canSave ? Theme.Palette.primary : Theme.Palette.textSecondary,
-                                    in: RoundedRectangle(cornerRadius: Theme.Radius.control))
-                }
-                .buttonStyle(.plain)
-                .disabled(!canSave)
-
-                if showsCancel {
-                    Button("Cancel") { onComplete?() }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(Theme.Palette.textSecondary)
-                        .frame(maxWidth: .infinity)
+                HStack(spacing: Theme.Spacing.sm) {
+                    if showsCancel {
+                        Button("Cancel") { onComplete?() }
+                            .buttonStyle(.fluentSecondary)
+                    }
+                    Button(action: save) {
+                        Text("Add Account")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.fluentPrimary)
+                    .disabled(!canSave)
                 }
             }
             .padding(Theme.Spacing.xl)
@@ -93,7 +87,7 @@ struct AccountSetupView: View {
                 .font(.system(size: 36))
                 .foregroundStyle(Theme.Palette.primary)
             Text("Add a Mail Account")
-                .font(Theme.Font.dashboardTitle)
+                .font(Theme.Font.display)
             Text("Connect over IMAP/SMTP. Your messages stay on this device and are never synced to iCloud — only these settings sync, and the password rides iCloud Keychain, so your other devices set themselves up.")
                 .font(Theme.Font.cardBody)
                 .foregroundStyle(Theme.Palette.textSecondary)
@@ -105,19 +99,11 @@ struct AccountSetupView: View {
     }
 
     private func field(_ label: String, text: Binding<String>, prompt: String) -> some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
-            Text(label).font(Theme.Font.cardCaption).foregroundStyle(Theme.Palette.textSecondary)
-            TextField(prompt, text: text)
-                .textFieldStyle(.roundedBorder)
-        }
+        FluentFormField(label: label, text: text, prompt: prompt)
     }
 
     private func secureField(_ label: String, text: Binding<String>) -> some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
-            Text(label).font(Theme.Font.cardCaption).foregroundStyle(Theme.Palette.textSecondary)
-            SecureField("••••••••", text: text)
-                .textFieldStyle(.roundedBorder)
-        }
+        FluentFormField(label: label, text: text, prompt: "••••••••", secure: true)
     }
 
     private func serverRow(_ label: String, host: Binding<String>, port: Binding<Int>) -> some View {
