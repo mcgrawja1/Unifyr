@@ -60,18 +60,21 @@ struct RemindersView: View {
             }
         }
         .toolbar {
-            ToolbarItem {
-                Button {
-                    newListName = ""
-                    creatingList = true
-                } label: {
-                    Label("New List", systemImage: "plus.rectangle.on.folder")
+            // Compact only — regular widths use the Fluent command bar.
+            if isCompact {
+                ToolbarItem {
+                    Button {
+                        newListName = ""
+                        creatingList = true
+                    } label: {
+                        Label("New List", systemImage: "plus.rectangle.on.folder")
+                    }
+                    .help("New Reminders List")
                 }
-                .help("New Reminders List")
-            }
-            ToolbarItem {
-                Toggle("Show Completed", isOn: $showCompleted)
-                    .onChange(of: showCompleted) { _, _ in Task { await load() } }
+                ToolbarItem {
+                    Toggle("Show Completed", isOn: $showCompleted)
+                        .onChange(of: showCompleted) { _, _ in Task { await load() } }
+                }
             }
         }
         .alert("Couldn't Save", isPresented: .init(
@@ -97,6 +100,41 @@ struct RemindersView: View {
     }
 
     private var content: some View {
+        VStack(spacing: 0) {
+            if !isCompact {
+                commandBar
+            }
+            boardAndPanel
+        }
+    }
+
+    /// Fluent command bar (regular widths): New Reminders List + the
+    /// completed-items toggle, both the same operations as before.
+    private var commandBar: some View {
+        CommandBar {
+            Button {
+                newListName = ""
+                creatingList = true
+            } label: {
+                Label("New List", systemImage: "plus.rectangle.on.folder")
+            }
+            .buttonStyle(.fluentToolbar)
+            .help("New Reminders List")
+
+            Button {
+                showCompleted.toggle()
+                Task { await load() }
+            } label: {
+                Label(
+                    showCompleted ? "Hide Completed" : "Show Completed",
+                    systemImage: showCompleted ? "eye.slash" : "eye"
+                )
+            }
+            .buttonStyle(.fluentToolbar)
+        }
+    }
+
+    private var boardAndPanel: some View {
         HStack(spacing: 0) {
             ScrollView(.horizontal) {
                 HStack(alignment: .top, spacing: Theme.Spacing.lg) {
@@ -112,13 +150,19 @@ struct RemindersView: View {
                         )
                     }
                     if lists.isEmpty {
-                        EmptyStateLine(text: "No reminders lists found.")
-                            .padding(Theme.Spacing.xl)
+                        FluentEmptyState(
+                            systemImage: "checklist",
+                            headline: "No reminders lists found",
+                            subline: "Create a list to get started.",
+                            compact: true
+                        )
+                        .frame(maxWidth: 420)
                     }
                 }
                 .padding(Theme.Spacing.lg)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(isCompact ? Theme.Palette.background : Theme.Palette.windowBackground)
 
             // Mac/iPad: the editor is a side panel. iPhone: it's a sheet
             // (a 300pt panel next to the columns won't fit a phone).
@@ -424,7 +468,11 @@ private struct ReminderListColumn: View {
         .padding(Theme.Spacing.md)
         .frame(width: 280)
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(Theme.Palette.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+        .background(Theme.Palette.pane, in: RoundedRectangle(cornerRadius: Theme.Radius.lg))
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.Radius.lg)
+                .strokeBorder(Theme.Palette.separator, lineWidth: 1)
+        )
     }
 
     private func sortLabel(_ title: String, selected: Bool) -> some View {
