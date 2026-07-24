@@ -170,8 +170,7 @@ struct DatabaseViewEditor: View {
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.primary)
+                .buttonStyle(.fluentPrimary)
             }
             .padding(Theme.Spacing.lg)
         }

@@ -31,18 +31,19 @@ struct DatabaseCalendarView: View {
         if let dateProperty {
             grid(dateProperty)
         } else {
-            VStack(spacing: Theme.Spacing.md) {
-                Image(systemName: "calendar.badge.exclamationmark")
-                    .font(.system(size: 36))
-                    .foregroundStyle(Theme.Palette.textSecondary)
-                Text("Calendar view needs a Date property.")
-                    .foregroundStyle(Theme.Palette.textSecondary)
+            VStack(spacing: Theme.Spacing.lg) {
+                FluentEmptyState(
+                    systemImage: "calendar.badge.exclamationmark",
+                    headline: "No Date property",
+                    subline: "Calendar view needs a Date property.",
+                    compact: true
+                )
+                .frame(maxHeight: 220)
                 Button("Add a Date Property") {
                     store.addProperty(to: note, kind: .date, name: "Date")
                     try? context.save()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.primary)
+                .buttonStyle(.fluentPrimary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }

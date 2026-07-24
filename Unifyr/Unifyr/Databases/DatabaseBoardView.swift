@@ -36,12 +36,14 @@ struct DatabaseBoardView: View {
             board(groupProperty)
         } else {
             // No select property to group by — offer to create the standard one.
-            VStack(spacing: Theme.Spacing.md) {
-                Image(systemName: "square.grid.3x1.below.line.grid.1x2")
-                    .font(.system(size: 36))
-                    .foregroundStyle(Theme.Palette.textSecondary)
-                Text("Board view groups rows by a Select property.")
-                    .foregroundStyle(Theme.Palette.textSecondary)
+            VStack(spacing: Theme.Spacing.lg) {
+                FluentEmptyState(
+                    systemImage: "square.grid.3x1.below.line.grid.1x2",
+                    headline: "No Select property",
+                    subline: "Board view groups rows by a Select property.",
+                    compact: true
+                )
+                .frame(maxHeight: 220)
                 Button("Add a Status Property") {
                     store.addProperty(
                         to: note,
@@ -55,8 +57,7 @@ struct DatabaseBoardView: View {
                     )
                     try? context.save()
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.primary)
+                .buttonStyle(.fluentPrimary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
