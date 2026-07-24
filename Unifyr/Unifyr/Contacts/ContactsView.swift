@@ -69,7 +69,7 @@ struct ContactsView: View {
                 } else {
                     PlatformHSplit {
                         groupsPane
-                            .frame(minWidth: 160, idealWidth: 190, maxWidth: 260)
+                            .frame(minWidth: 170, idealWidth: Theme.Metrics.navPaneWidth, maxWidth: 300)
                         list
                             .frame(minWidth: 360)
                     }
@@ -91,13 +91,16 @@ struct ContactsView: View {
             }
         }
         .toolbar {
-            ToolbarItem {
-                Button {
-                    creatingContact = true
-                } label: {
-                    Image(systemName: "person.crop.circle.badge.plus")
+            // Compact only — regular widths carry New Contact in the nav pane.
+            if isCompact {
+                ToolbarItem {
+                    Button {
+                        creatingContact = true
+                    } label: {
+                        Image(systemName: "person.crop.circle.badge.plus")
+                    }
+                    .help("New Contact")
                 }
-                .help("New Contact")
             }
         }
         .alert("New Group", isPresented: $creatingGroup) {
@@ -118,10 +121,24 @@ struct ContactsView: View {
 
     private var groupsPane: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // Outlook nav-pane header: the module's primary action.
+            if !isCompact {
+                HStack(spacing: Theme.Spacing.sm) {
+                    Button {
+                        creatingContact = true
+                    } label: {
+                        Label("New Contact", systemImage: "person.badge.plus")
+                    }
+                    .buttonStyle(.fluentPrimary)
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, Theme.Spacing.sm)
+            }
             HStack {
-                Text("GROUPS")
-                    .font(Theme.Font.cardCaption.weight(.semibold))
-                    .foregroundStyle(Theme.Palette.textSecondary)
+                Text("Groups")
+                    .font(Theme.Font.bodyStrong)
+                    .foregroundStyle(Theme.Palette.textPrimary)
                 Spacer()
                 Button {
                     newGroupName = ""
@@ -129,12 +146,13 @@ struct ContactsView: View {
                 } label: {
                     Image(systemName: "plus")
                         .font(.system(size: 11))
-                        .foregroundStyle(Theme.Palette.textSecondary)
+                        .foregroundStyle(Theme.Palette.primary)
                 }
                 .buttonStyle(.plain)
                 .help("New Group")
             }
-            .padding(Theme.Spacing.md)
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.sm)
             List {
                 groupRow(nil, label: "All Contacts", systemImage: "person.2")
                 ForEach(groups) { group in
@@ -175,8 +193,10 @@ struct ContactsView: View {
                 }
             }
             .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
+            .tint(Theme.Palette.primary)
         }
-        .background(Theme.Palette.surface)
+        .background(isCompact ? Theme.Palette.surface : Theme.Palette.navPane)
     }
 
     private func groupRow(_ groupID: String?, label: String, systemImage: String) -> some View {
@@ -196,19 +216,40 @@ struct ContactsView: View {
         }
         .buttonStyle(.plain)
         .listRowBackground(
-            selectedGroupID == groupID ? Theme.Palette.primary.opacity(0.12) : Color.clear
+            selectedGroupID == groupID ? Theme.Palette.selected : Color.clear
         )
     }
 
     private var list: some View {
+        VStack(spacing: 0) {
+            // Regular widths: in-pane search (no window toolbar under the
+            // Outlook chrome). Compact keeps the nav-bar .searchable below.
+            if !isCompact {
+                FluentSearchField(text: $searchText, prompt: "Search people")
+                    .padding(.horizontal, Theme.Spacing.sm)
+                    .padding(.vertical, Theme.Spacing.sm)
+            }
+            contactScroll
+        }
+    }
+
+    private var contactScroll: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                 if let errorText {
-                    EmptyStateLine(text: errorText)
-                        .padding(Theme.Spacing.lg)
+                    FluentEmptyState(
+                        systemImage: "exclamationmark.triangle",
+                        headline: "Something went wrong",
+                        subline: errorText,
+                        compact: true
+                    )
                 } else if visibleContacts.isEmpty {
-                    EmptyStateLine(text: searchText.isEmpty ? "No contacts found." : "No matches for \u{201C}\(searchText)\u{201D}.")
-                        .padding(Theme.Spacing.lg)
+                    FluentEmptyState(
+                        systemImage: searchText.isEmpty ? "person.2" : "magnifyingglass",
+                        headline: searchText.isEmpty ? "No contacts found" : "No results",
+                        subline: searchText.isEmpty ? nil : "No matches for \u{201C}\(searchText)\u{201D}.",
+                        compact: true
+                    )
                 } else {
                     ForEach(visibleContacts) { contact in
                         Button {
@@ -252,7 +293,9 @@ struct ContactsView: View {
             }
             .padding(Theme.Spacing.lg)
         }
-        .searchable(text: $searchText, placement: .toolbar, prompt: "Search people")
+        // Compact keeps the native nav-bar search; regular widths use the
+        // in-pane FluentSearchField above (no window toolbar to host it).
+        .modifier(CompactSearchable(text: $searchText, isCompact: isCompact, prompt: "Search people"))
         .onChange(of: searchText) { _, _ in Task { await load() } }
         // Pull to refresh (iOS); a no-op gesture on macOS.
         .refreshable {

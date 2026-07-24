@@ -227,6 +227,25 @@ struct FluentSearchField: View {
     }
 }
 
+// MARK: - Compact-only searchable
+
+/// Applies the native nav-bar `.searchable` only on compact layouts —
+/// regular widths host a `FluentSearchField` inside the pane instead
+/// (the Outlook chrome removes the window toolbar that hosted it).
+struct CompactSearchable: ViewModifier {
+    @Binding var text: String
+    let isCompact: Bool
+    var prompt: String = "Search"
+
+    func body(content: Content) -> some View {
+        if isCompact {
+            content.searchable(text: $text, placement: .toolbar, prompt: prompt)
+        } else {
+            content
+        }
+    }
+}
+
 // MARK: - List row
 
 /// Nav-pane / list-pane row: 28pt, 16pt leading icon, optional trailing

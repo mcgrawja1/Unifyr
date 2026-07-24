@@ -61,29 +61,78 @@ struct ContactEditorView: View {
         _birthday = State(initialValue: contact?.birthday ?? Date())
     }
 
+    /// Live name for the blue title band ("Record Name" pattern).
+    private var editorTitle: String {
+        let name = [edit.givenName, edit.familyName]
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+        if !name.isEmpty { return name }
+        return contact == nil ? "New Contact" : "Edit Contact"
+    }
+
     var body: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Text(contact == nil ? "New Contact" : "Edit Contact").font(Theme.Font.cardTitle)
-                Spacer()
+        RecordEditorChrome(title: editorTitle) {
+            Button {
+                Task { await save() }
+            } label: {
+                if saving {
+                    Label {
+                        Text("Save")
+                    } icon: {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(width: Theme.Metrics.iconInline, height: Theme.Metrics.iconInline)
+                    }
+                } else {
+                    Label("Save", systemImage: "square.and.arrow.down")
+                }
             }
-            .padding(Theme.Spacing.lg)
+            .buttonStyle(.fluentToolbar)
+            .keyboardShortcut(.defaultAction)
+            .disabled(saving)
 
-            Divider().overlay(Theme.Palette.separator)
+            Button { dismiss() } label: {
+                Label("Cancel", systemImage: "xmark")
+            }
+            .buttonStyle(.fluentToolbar)
 
+            if contact != nil {
+                Button { confirmingDelete = true } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+                .buttonStyle(.fluentToolbar)
+            }
+        } content: {
             ScrollView {
-                VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-                    nameSection
+                VStack(alignment: .leading, spacing: Theme.Spacing.lg2) {
+                    // Reference-3 header: large circular avatar beside names.
+                    HStack(alignment: .top, spacing: Theme.Spacing.lg2) {
+                        ContactAvatar(
+                            data: contact?.thumbnail,
+                            name: editorTitle,
+                            size: 96
+                        )
+                        nameSection
+                    }
+                    sectionRule
                     workSection
-                    labeledList(title: "PHONES", items: $edit.phones, valuePrompt: "(555) 555-5555", defaultLabel: "mobile")
-                    labeledList(title: "EMAILS", items: $edit.emails, valuePrompt: "email@example.com", defaultLabel: "home")
-                    labeledList(title: "URLS", items: $edit.urls, valuePrompt: "https://example.com", defaultLabel: "homepage")
+                    sectionRule
+                    labeledList(title: "Phone Numbers", items: $edit.phones, valuePrompt: "(555) 555-5555", defaultLabel: "mobile")
+                    sectionRule
+                    labeledList(title: "Email Addresses", items: $edit.emails, valuePrompt: "email@example.com", defaultLabel: "home")
+                    sectionRule
+                    labeledList(title: "URLs", items: $edit.urls, valuePrompt: "https://example.com", defaultLabel: "homepage")
+                    sectionRule
                     addressSection
+                    sectionRule
                     birthdaySection
                     datesSection
-                    labeledList(title: "RELATED NAMES", items: $edit.relations, valuePrompt: "Name", defaultLabel: "spouse", labelPrompt: "relation")
-                    labeledList(title: "SOCIAL PROFILES", items: $edit.socialProfiles, valuePrompt: "username", defaultLabel: "X", labelPrompt: "service")
-                    labeledList(title: "INSTANT MESSAGES", items: $edit.instantMessages, valuePrompt: "handle", defaultLabel: "Signal", labelPrompt: "service")
+                    sectionRule
+                    labeledList(title: "Related Names", items: $edit.relations, valuePrompt: "Name", defaultLabel: "spouse", labelPrompt: "relation")
+                    sectionRule
+                    labeledList(title: "Social Profiles", items: $edit.socialProfiles, valuePrompt: "username", defaultLabel: "X", labelPrompt: "service")
+                    sectionRule
+                    labeledList(title: "Instant Messages", items: $edit.instantMessages, valuePrompt: "handle", defaultLabel: "Signal", labelPrompt: "service")
 
                     if let errorText {
                         Text(errorText)
@@ -91,38 +140,10 @@ struct ContactEditorView: View {
                             .foregroundStyle(Theme.Palette.danger)
                     }
                 }
-                .padding(Theme.Spacing.lg)
+                .padding(Theme.Spacing.lg2)
             }
-
-            Divider().overlay(Theme.Palette.separator)
-
-            HStack {
-                if contact != nil {
-                    Button("Delete Contact…", role: .destructive) { confirmingDelete = true }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(Theme.Palette.danger)
-                }
-                Spacer()
-                Button("Cancel") { dismiss() }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Theme.Palette.textSecondary)
-                Button {
-                    Task { await save() }
-                } label: {
-                    HStack(spacing: Theme.Spacing.xs) {
-                        if saving { ProgressView().controlSize(.small) }
-                        Text("Save")
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.primary)
-                .keyboardShortcut(.defaultAction)
-                .disabled(saving)
-            }
-            .padding(Theme.Spacing.lg)
         }
         .frame(width: 520, height: 680)
-        .background(Theme.Palette.background)
         .confirmationDialog("Delete \(contact?.displayName ?? "Contact")?", isPresented: $confirmingDelete, titleVisibility: .visible) {
             Button("Delete", role: .destructive) { Task { await delete() } }
             Button("Cancel", role: .cancel) {}
@@ -135,7 +156,7 @@ struct ContactEditorView: View {
 
     private var nameSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-            sectionLabel("NAME")
+            sectionLabel("Name")
             HStack(spacing: Theme.Spacing.xs) {
                 TextField("Prefix", text: $edit.namePrefix).textFieldStyle(.roundedBorder).frame(width: 70)
                 TextField("First name", text: $edit.givenName).textFieldStyle(.roundedBorder)
@@ -153,7 +174,7 @@ struct ContactEditorView: View {
 
     private var workSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-            sectionLabel("WORK")
+            sectionLabel("Work Information")
             TextField("Company", text: $edit.organizationName).textFieldStyle(.roundedBorder)
             HStack(spacing: Theme.Spacing.xs) {
                 TextField("Job title", text: $edit.jobTitle).textFieldStyle(.roundedBorder)
@@ -164,7 +185,7 @@ struct ContactEditorView: View {
 
     private var addressSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-            sectionLabel("ADDRESSES")
+            sectionLabel("Addresses")
             ForEach($edit.postalAddresses) { $address in
                 VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                     HStack(spacing: Theme.Spacing.xs) {
@@ -191,7 +212,7 @@ struct ContactEditorView: View {
 
     private var birthdaySection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-            sectionLabel("BIRTHDAY")
+            sectionLabel("Birthday")
             HStack(spacing: Theme.Spacing.sm) {
                 Toggle("Has birthday", isOn: $hasBirthday).platformCheckbox()
                 if hasBirthday {
@@ -203,7 +224,7 @@ struct ContactEditorView: View {
 
     private var datesSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-            sectionLabel("DATES")
+            sectionLabel("Dates")
             ForEach($edit.dates) { $entry in
                 HStack(spacing: Theme.Spacing.xs) {
                     TextField("label", text: $entry.label)
@@ -246,11 +267,17 @@ struct ContactEditorView: View {
 
     // MARK: Small pieces
 
+    /// 1px rule between record-editor sections (reference-3 anatomy).
+    private var sectionRule: some View {
+        Rectangle().fill(Theme.Palette.separator).frame(height: 1)
+    }
+
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(Theme.Font.cardCaption.weight(.semibold))
-            .foregroundStyle(Theme.Palette.textSecondary)
+            .font(Theme.Font.subtitle)
+            .foregroundStyle(Theme.Palette.textPrimary)
     }
+
 
     private func removeButton(_ action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -260,12 +287,7 @@ struct ContactEditorView: View {
     }
 
     private func addButton(_ title: String, _ action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Label(title, systemImage: "plus.circle")
-                .font(Theme.Font.cardCaption)
-                .foregroundStyle(Theme.Palette.primary)
-        }
-        .buttonStyle(.plain)
+        FluentAddLink(title: title, action: action)
     }
 
     // MARK: Actions
