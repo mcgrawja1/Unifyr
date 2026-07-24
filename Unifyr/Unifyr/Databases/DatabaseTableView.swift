@@ -248,7 +248,7 @@ struct DatabaseTableView: View {
                 Image(systemName: property.propertyKind.systemImage)
                     .font(.caption)
                 Text(property.name)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .lineLimit(1)
                 Spacer(minLength: 0)
             }
@@ -325,7 +325,7 @@ struct DatabaseTableView: View {
                     store.setValue(cell, rowID: row.id, propertyID: property.id, in: note)
                     try? context.save()
                 }
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .padding(.horizontal, Theme.Spacing.sm)
                 .padding(.vertical, Theme.Spacing.xs)
                 .frame(width: width(of: property), alignment: .leading)
@@ -361,7 +361,7 @@ struct DatabaseTableView: View {
                             Text("")
                         } else {
                             Text("Σ \(numbers.reduce(0, +).formatted(.number.precision(.fractionLength(0...4)).grouping(.never)))")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                                 .frame(maxWidth: .infinity, alignment: .trailing)
                         }
@@ -382,7 +382,7 @@ struct DatabaseTableView: View {
             try? context.save()
         } label: {
             Label("New Row", systemImage: "plus")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
                 .padding(.horizontal, Theme.Spacing.sm)
                 .padding(.vertical, Theme.Spacing.sm)

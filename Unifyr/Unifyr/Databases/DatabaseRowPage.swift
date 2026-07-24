@@ -47,7 +47,7 @@ struct DatabaseRowPage: View {
                 store.setValue(cell, rowID: row.id, propertyID: titleProperty.id, in: note)
                 try? context.save()
             }
-            .font(Theme.Font.dashboardTitle)
+            .font(Theme.Font.display)
             .padding(.horizontal, Theme.Spacing.xl)
             .padding(.top, Theme.Spacing.sm)
 
@@ -56,7 +56,7 @@ struct DatabaseRowPage: View {
                 ForEach(properties.filter { $0.id != titleProperty?.id }) { property in
                     HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.md) {
                         Label(property.name, systemImage: property.propertyKind.systemImage)
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.textSecondary)
                             .frame(width: 140, alignment: .leading)
                             .lineLimit(1)
@@ -118,7 +118,7 @@ struct DatabaseRowPage: View {
             ))
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
     }
 
     private var titleText: String {

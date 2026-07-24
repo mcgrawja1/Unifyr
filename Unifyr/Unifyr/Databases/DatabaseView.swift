@@ -137,7 +137,7 @@ struct DatabaseView: View {
                 databaseBody
             }
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         // An embed's ↗ deep-links to a specific row; the latch covers the
         // mount-after-navigation case, onReceive covers already-mounted.
         .task(id: note.id) {
@@ -181,7 +181,7 @@ struct DatabaseView: View {
                             Button("New Calendar View") { createView(mode: .calendar) }
                         } label: {
                             Image(systemName: "plus")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                                 .padding(Theme.Spacing.xs)
                         }
@@ -195,7 +195,7 @@ struct DatabaseView: View {
                         editingView = selectedView
                     } label: {
                         Label(filterSortSummary(selectedView), systemImage: "line.3.horizontal.decrease.circle")
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(Theme.Palette.primary)
@@ -232,14 +232,14 @@ struct DatabaseView: View {
                         }
                     } label: {
                         Label("Group: \(groupProperty?.name ?? "—")", systemImage: "square.grid.3x1.below.line.grid.1x2")
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                     }
                     .menuIndicator(.hidden)
                     .fixedSize()
                 }
 
                 Text(rowCountLabel)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .fixedSize()
             }
@@ -323,7 +323,7 @@ struct DatabaseView: View {
                 Image(systemName: view.flatMap { DatabaseViewMode(rawValue: $0.mode) }?.systemImage ?? "tray.full")
                     .font(.caption2)
                 Text(view?.name ?? "All")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
             }
             .padding(.horizontal, Theme.Spacing.sm)
             .padding(.vertical, Theme.Spacing.xs)

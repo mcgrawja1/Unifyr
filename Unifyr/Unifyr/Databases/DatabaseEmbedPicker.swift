@@ -67,7 +67,7 @@ struct DatabaseEmbedPicker: View {
             .padding(Theme.Spacing.md)
         }
         .frame(width: 400, height: 440)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
     }
 
     private func row(_ database: Note, view: DBViewConfig?) -> some View {
@@ -86,11 +86,11 @@ struct DatabaseEmbedPicker: View {
                         .font(.caption)
                         .foregroundStyle(Theme.Palette.textSecondary)
                     Text(view.name)
-                        .font(Theme.Font.cardBody)
+                        .font(Theme.Font.body)
                 } else {
                     Text(database.emoji ?? "📊")
                     Text(database.title.isEmpty ? "Untitled" : database.title)
-                        .font(Theme.Font.cardBody)
+                        .font(Theme.Font.body)
                 }
                 Spacer()
             }

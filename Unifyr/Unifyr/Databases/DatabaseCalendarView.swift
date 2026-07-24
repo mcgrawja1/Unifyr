@@ -63,14 +63,14 @@ struct DatabaseCalendarView: View {
                 Button { step(-1) } label: { Image(systemName: "chevron.left") }
                     .buttonStyle(.plain)
                 Text(monthAnchor.formatted(.dateTime.month(.wide).year()))
-                    .font(Theme.Font.cardTitle)
+                    .font(Theme.Font.bodyStrong)
                 Button { step(1) } label: { Image(systemName: "chevron.right") }
                     .buttonStyle(.plain)
                 Button("Today") {
                     monthAnchor = calendar.dateInterval(of: .month, for: Date())?.start ?? Date()
                 }
                 .buttonStyle(.plain)
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.primary)
                 Spacer()
             }
@@ -80,7 +80,7 @@ struct DatabaseCalendarView: View {
             HStack(spacing: 0) {
                 ForEach(weekdaySymbols, id: \.self) { symbol in
                     Text(symbol)
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                         .frame(maxWidth: .infinity)
                 }
@@ -112,7 +112,7 @@ struct DatabaseCalendarView: View {
                 let isToday = calendar.isDateInToday(day)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(calendar.component(.day, from: day))")
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(isToday ? Theme.Palette.textOnAccent : Theme.Palette.textSecondary)
                         .padding(.horizontal, 5)
                         .padding(.vertical, 1)
@@ -122,18 +122,18 @@ struct DatabaseCalendarView: View {
                             openRow(row)
                         } label: {
                             Text(store.rowTitle(row.id, titleProperty: titleProperty))
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .lineLimit(1)
                                 .padding(.horizontal, 4)
                                 .padding(.vertical, 1)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                                .background(Theme.Palette.primary.softFill(0.12), in: RoundedRectangle(cornerRadius: 4))
+                                .background(Theme.Palette.primary.softFill(0.12), in: RoundedRectangle(cornerRadius: Theme.Radius.sm))
                         }
                         .buttonStyle(.plain)
                     }
                     if let extra = byDay[key]?.count, extra > 3 {
                         Text("+\(extra - 3)")
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.textSecondary)
                             .padding(.horizontal, 4)
                     }

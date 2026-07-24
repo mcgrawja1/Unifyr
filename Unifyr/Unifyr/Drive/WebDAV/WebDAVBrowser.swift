@@ -91,7 +91,7 @@ struct WebDAVBrowser: View {
             Divider().overlay(Theme.Palette.separator)
             content
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .task(id: location) { await reload() }
         // Week-old preview downloads get purged so tmp doesn't grow forever.
         .task { WebDAVClient.cleanTempDirectory() }
@@ -174,7 +174,7 @@ struct WebDAVBrowser: View {
                     .font(.system(size: 28))
                     .foregroundStyle(Theme.Palette.textSecondary)
                 Text(errorText)
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .multilineTextAlignment(.center)
                 Button("Try Again") { Task { await reload() } }
@@ -219,18 +219,18 @@ struct WebDAVBrowser: View {
                     .frame(width: 18)
             }
             Text(entry.name)
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .lineLimit(1)
             Spacer()
             if !entry.isDirectory, let size = entry.size {
                 Text(ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file))
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .frame(width: 74, alignment: .trailing)
             }
             if let modified = entry.modified {
                 Text(modified.formatted(date: .abbreviated, time: .shortened))
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .frame(width: 140, alignment: .trailing)
             }
@@ -293,7 +293,7 @@ struct WebDAVBrowser: View {
                         if !isLast { onOpenFolder(WebDAVLocation(serverID: server.id, url: crumb.url)) }
                     }
                     .buttonStyle(.plain)
-                    .font(Theme.Font.cardBody.weight(isLast ? .semibold : .regular))
+                    .font(Theme.Font.body.weight(isLast ? .semibold : .regular))
                     .foregroundStyle(isLast ? Theme.Palette.textPrimary : Theme.Palette.textSecondary)
                     .disabled(isLast)
                 }

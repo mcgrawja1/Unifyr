@@ -82,7 +82,7 @@ struct HomeAssistantCard: View {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 EmptyStateLine(text: errorText)
                 Button("Connection…") { showConnect = true }
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
             }
         } else if pinnedIDs.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
@@ -94,11 +94,11 @@ struct HomeAssistantCard: View {
                         Image(systemName: "checklist")
                         Text("Choose Entities")
                     }
-                    .font(Theme.Font.cardBody.weight(.medium))
+                    .font(Theme.Font.body.weight(.medium))
                     .foregroundStyle(Theme.Palette.textOnAccent)
                     .padding(.horizontal, Theme.Spacing.md)
                     .padding(.vertical, Theme.Spacing.sm)
-                    .background(Theme.Palette.primary, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                    .background(Theme.Palette.primary, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
                 }
                 .buttonStyle(.plain)
             }
@@ -110,7 +110,7 @@ struct HomeAssistantCard: View {
     private var connectPrompt: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             Text("See your smart-home readings — temperatures, energy, doors, locks — at a glance.")
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .foregroundStyle(Theme.Palette.textSecondary)
             Button {
                 showConnect = true
@@ -119,11 +119,11 @@ struct HomeAssistantCard: View {
                     Image(systemName: "house.badge.wifi")
                     Text("Connect Home Assistant")
                 }
-                .font(Theme.Font.cardBody.weight(.medium))
+                .font(Theme.Font.body.weight(.medium))
                 .foregroundStyle(Theme.Palette.textOnAccent)
                 .padding(.horizontal, Theme.Spacing.md)
                 .padding(.vertical, Theme.Spacing.sm)
-                .background(Theme.Palette.primary, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                .background(Theme.Palette.primary, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
             }
             .buttonStyle(.plain)
         }
@@ -145,12 +145,12 @@ struct HomeAssistantCard: View {
                 .foregroundStyle(Theme.Palette.primary)
                 .frame(width: 22)
             Text(entity?.displayName ?? Self.prettyID(id))
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .foregroundStyle(Theme.Palette.textPrimary)
                 .lineLimit(1)
             Spacer(minLength: Theme.Spacing.sm)
             Text(entity?.cardState ?? (loading ? "…" : "—"))
-                .font(Theme.Font.cardBody.weight(.medium))
+                .font(Theme.Font.body.weight(.medium))
                 .foregroundStyle(Theme.Palette.textSecondary)
                 .lineLimit(1)
         }

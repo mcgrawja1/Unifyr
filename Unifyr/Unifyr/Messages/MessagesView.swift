@@ -56,7 +56,7 @@ struct MessagesView: View {
                 content
             }
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .navigationTitle("Messages")
         .task {
             await start()
@@ -125,10 +125,10 @@ struct MessagesView: View {
                     .font(.system(size: 28))
                     .foregroundStyle(Theme.Palette.primary)
                 Text("Connect Messages")
-                    .font(Theme.Font.cardTitle)
+                    .font(Theme.Font.bodyStrong)
             }
             Text("Unifyr reads your iMessage history directly from the Messages database, which macOS protects behind Full Disk Access. Reading is local and read-only; sending goes through the Messages app itself.")
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .foregroundStyle(Theme.Palette.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -138,7 +138,7 @@ struct MessagesView: View {
                 stepLine("3", "Come back and click “Check Again”. If it still doesn't connect, quit and reopen Unifyr once.")
             }
             .padding(Theme.Spacing.md)
-            .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+            .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.lg))
 
             HStack(spacing: Theme.Spacing.sm) {
                 Button("Open System Settings") {
@@ -160,12 +160,12 @@ struct MessagesView: View {
     private func stepLine(_ number: String, _ text: String) -> some View {
         HStack(alignment: .top, spacing: Theme.Spacing.sm) {
             Text(number)
-                .font(Theme.Font.cardCaption.weight(.bold))
+                .font(Theme.Font.label.weight(.bold))
                 .foregroundStyle(Theme.Palette.textOnAccent)
                 .frame(width: 18, height: 18)
                 .background(Theme.Palette.primary, in: Circle())
             Text(.init(text))
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .foregroundStyle(Theme.Palette.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -212,7 +212,7 @@ struct MessagesView: View {
             }
         }
         .listStyle(.inset)
-        .background(Theme.Palette.surface)
+        .background(Theme.Palette.pane)
     }
 
     private func chatRow(_ chat: ChatSnapshot) -> some View {
@@ -257,7 +257,7 @@ struct MessagesView: View {
                     .font(.system(size: 42))
                     .foregroundStyle(Theme.Palette.textSecondary)
                 Text("Select a conversation")
-                    .font(Theme.Font.cardTitle)
+                    .font(Theme.Font.bodyStrong)
                     .foregroundStyle(Theme.Palette.textPrimary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -267,7 +267,7 @@ struct MessagesView: View {
     private func transcriptHeader(_ chat: ChatSnapshot) -> some View {
         HStack(spacing: Theme.Spacing.sm) {
             Text(title(for: chat))
-                .font(Theme.Font.cardTitle)
+                .font(Theme.Font.bodyStrong)
                 .lineLimit(1)
             ServiceBadge(service: chat.serviceName)
             Spacer()
@@ -283,12 +283,12 @@ struct MessagesView: View {
                         switch entry.kind {
                         case .daySeparator(let date):
                             Text(date.formatted(date: .abbreviated, time: .omitted))
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                                 .padding(.vertical, Theme.Spacing.sm)
                         case .sender(let name):
                             Text(name)
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.leading, Theme.Spacing.md)
@@ -323,7 +323,7 @@ struct MessagesView: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
             if let sendError {
                 Text(sendError)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.danger)
             }
             HStack(alignment: .bottom, spacing: Theme.Spacing.sm) {
@@ -341,7 +341,7 @@ struct MessagesView: View {
                     .textFieldStyle(.plain)
                     .lineLimit(1...5)
                     .padding(Theme.Spacing.sm)
-                    .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: 14))
+                    .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: 14))
                     .onSubmit { Task { await send(chat) } }
                 Button {
                     Task { await send(chat) }
@@ -607,15 +607,15 @@ private struct ChatRow: View {
             VStack(alignment: .leading, spacing: 1) {
                 HStack(alignment: .firstTextBaseline) {
                     Text(title)
-                        .font(Theme.Font.cardBody.weight(.medium))
+                        .font(Theme.Font.body.weight(.medium))
                         .lineLimit(1)
                     Spacer()
                     Text(relativeDate)
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                 }
                 Text((chat.lastFromMe ? "You: " : "") + chat.lastPreview)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .lineLimit(2)
             }
@@ -659,7 +659,7 @@ private struct ServiceBadge: View {
                 .frame(width: 18, height: 18)
                 .background(isSMS ? unifyrSMSGreen : Theme.Palette.primary, in: RoundedRectangle(cornerRadius: 5))
             Text(isSMS ? "SMS" : "iMessage")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
         }
     }
@@ -679,21 +679,21 @@ private struct MessageBubble: View {
                 }
                 if !message.text.isEmpty {
                     Text(message.text)
-                        .font(Theme.Font.cardBody)
+                        .font(Theme.Font.body)
                         .foregroundStyle(message.isFromMe ? Theme.Palette.textOnAccent : Theme.Palette.textPrimary)
                         .padding(.horizontal, Theme.Spacing.md)
                         .padding(.vertical, Theme.Spacing.sm)
                         .background(
                             message.isFromMe
                                 ? (message.isSMS ? unifyrSMSGreen : Theme.Palette.primary)
-                                : Theme.Palette.surfaceRaised,
+                                : Theme.Palette.hover,
                             in: RoundedRectangle(cornerRadius: 16)
                         )
                         .textSelection(.enabled)
                 } else if message.attachments.isEmpty && message.hasAttachment {
                     // The file is gone from disk (e.g. purged by Messages).
                     Text("📎 Attachment unavailable")
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                 }
                 if !message.reactions.isEmpty {
@@ -702,7 +702,7 @@ private struct MessageBubble: View {
                         .font(.system(size: 11))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Theme.Palette.surfaceRaised, in: Capsule())
+                        .background(Theme.Palette.hover, in: Capsule())
                         .overlay(Capsule().strokeBorder(Theme.Palette.separator))
                         .padding(.top, -6)
                 }
@@ -732,7 +732,7 @@ private struct AttachmentView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 } else {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Theme.Palette.surfaceRaised)
+                        .fill(Theme.Palette.hover)
                         .frame(width: 160, height: 110)
                         .overlay(ProgressView().controlSize(.small))
                         .task {
@@ -744,7 +744,7 @@ private struct AttachmentView: View {
                     Image(systemName: "doc.fill")
                         .foregroundStyle(Theme.Palette.primary)
                     Text(attachment.name)
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textPrimary)
                         .lineLimit(1)
                     Image(systemName: "square.and.arrow.down")
@@ -753,7 +753,7 @@ private struct AttachmentView: View {
                 }
                 .padding(.horizontal, Theme.Spacing.sm)
                 .padding(.vertical, Theme.Spacing.xs)
-                .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: 10))
+                .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: 10))
                 .help("Save…")
             }
         }
@@ -780,7 +780,7 @@ private struct ImageAttachmentViewer: View {
             }
             HStack {
                 Text(attachment.name)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .lineLimit(1)
                 Spacer()
@@ -797,7 +797,7 @@ private struct ImageAttachmentViewer: View {
             }
             .padding(Theme.Spacing.md)
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
     }
 }
 
@@ -827,7 +827,7 @@ private struct NewMessageSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            Text("New Message").font(Theme.Font.cardTitle)
+            Text("New Message").font(Theme.Font.bodyStrong)
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: Theme.Spacing.xs) {
@@ -845,7 +845,7 @@ private struct NewMessageSheet: View {
                     }
                 }
                 .padding(Theme.Spacing.sm)
-                .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
 
                 if chosenHandle == nil, !suggestions.isEmpty {
                     ScrollView {
@@ -856,10 +856,10 @@ private struct NewMessageSheet: View {
                                     recipientQuery = "\(suggestion.name) — \(suggestion.handle)"
                                 } label: {
                                     HStack {
-                                        Text(suggestion.name).font(Theme.Font.cardBody)
+                                        Text(suggestion.name).font(Theme.Font.body)
                                         Spacer()
                                         Text(suggestion.handle)
-                                            .font(Theme.Font.cardCaption)
+                                            .font(Theme.Font.label)
                                             .foregroundStyle(Theme.Palette.textSecondary)
                                     }
                                     .padding(.vertical, 4)
@@ -871,7 +871,7 @@ private struct NewMessageSheet: View {
                         }
                     }
                     .frame(maxHeight: 140)
-                    .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                    .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
                 }
             }
 
@@ -879,11 +879,11 @@ private struct NewMessageSheet: View {
                 .textFieldStyle(.plain)
                 .lineLimit(3...6)
                 .padding(Theme.Spacing.sm)
-                .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
 
             if let errorText {
                 Text(errorText)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.danger)
             }
 
@@ -907,7 +907,7 @@ private struct NewMessageSheet: View {
         }
         .padding(Theme.Spacing.lg)
         .frame(width: 420)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
     }
 
     private func searchContacts() async {

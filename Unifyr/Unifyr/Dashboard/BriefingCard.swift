@@ -62,7 +62,7 @@ struct BriefingCard: View {
                 HStack(spacing: Theme.Spacing.sm) {
                     ProgressView().controlSize(.small)
                     Text("Claude is reading your day…")
-                        .font(Theme.Font.cardBody)
+                        .font(Theme.Font.body)
                         .foregroundStyle(Theme.Palette.textSecondary)
                 }
             case .ready(let text):
@@ -212,12 +212,12 @@ private struct WeatherStrip: View {
                     VStack(spacing: Theme.Spacing.xxs) {
                         Text(slot.emoji).font(.title3)
                         Text("\(slot.rainPercent)%")
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(slot.rainPercent >= 50 ? Theme.Palette.primary : Theme.Palette.textSecondary)
                         Text("\(slot.tempF)°")
-                            .font(Theme.Font.cardCaption.weight(.medium))
+                            .font(Theme.Font.label.weight(.medium))
                         Text(slot.label)
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
@@ -225,14 +225,14 @@ private struct WeatherStrip: View {
             }
             HStack(spacing: Theme.Spacing.md) {
                 Text("\(weather.locationName) · H \(weather.hiF)° / L \(weather.loF)°")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                 if !weather.concerns.isEmpty {
                     HStack(spacing: Theme.Spacing.xs) {
                         Image(systemName: "exclamationmark.triangle.fill")
                         Text(weather.concerns.joined(separator: " / "))
                     }
-                    .font(Theme.Font.cardCaption.weight(.medium))
+                    .font(Theme.Font.label.weight(.medium))
                     .foregroundStyle(Theme.Palette.danger)
                 }
                 Spacer()

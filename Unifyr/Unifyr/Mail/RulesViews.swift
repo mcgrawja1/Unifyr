@@ -105,7 +105,7 @@ struct RulesManagerView: View {
         } content: {
             VStack(alignment: .leading, spacing: Theme.Spacing.md) {
                 Text("Rules run on newly arrived Inbox messages when a mailbox syncs, in order.")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .padding(.horizontal, Theme.Spacing.lg)
                     .padding(.top, Theme.Spacing.md)
@@ -146,7 +146,7 @@ struct RulesManagerView: View {
             .controlSize(.small)
 
             Text(rule.name)
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .foregroundStyle(rule.isEnabled ? Theme.Palette.textPrimary : Theme.Palette.textSecondary)
             Spacer()
             Button("Edit") { editing = RuleEditorTarget(rule: rule) }
@@ -312,7 +312,7 @@ struct BlockedSendersView: View {
                                 Image(systemName: "nosign")
                                     .foregroundStyle(Theme.Palette.danger)
                                 Text(sender.address)
-                                    .font(Theme.Font.cardBody)
+                                    .font(Theme.Font.body)
                                 Spacer()
                                 Button {
                                     context.delete(sender)

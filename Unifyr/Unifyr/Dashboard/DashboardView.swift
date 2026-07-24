@@ -24,7 +24,7 @@ struct DashboardView: View {
                     Text(context.date.formatted(
                         .dateTime.hour(.defaultDigits(amPM: .wide)).minute(.twoDigits)
                     ))
-                    .font(Theme.Font.dashboardTitle.weight(.light).monospacedDigit())
+                    .font(Theme.Font.display.weight(.light).monospacedDigit())
                     .foregroundStyle(Theme.Palette.textPrimary)
                     .frame(maxWidth: .infinity)
                 }
@@ -49,17 +49,17 @@ struct DashboardView: View {
             }
             .padding(Theme.Spacing.xl)
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .navigationTitle("Dashboard")
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
             Text(greeting)
-                .font(Theme.Font.dashboardTitle)
+                .font(Theme.Font.display)
                 .foregroundStyle(Theme.Palette.textPrimary)
             Text(Date().formatted(date: .complete, time: .omitted))
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .foregroundStyle(Theme.Palette.textSecondary)
         }
     }

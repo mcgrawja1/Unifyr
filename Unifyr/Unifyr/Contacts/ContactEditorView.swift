@@ -136,7 +136,7 @@ struct ContactEditorView: View {
 
                     if let errorText {
                         Text(errorText)
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.danger)
                     }
                 }

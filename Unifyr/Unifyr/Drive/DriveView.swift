@@ -118,7 +118,7 @@ struct DriveView: View {
                 regularPanes
             }
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .navigationTitle("Drive")
         .task {
             servers.activate()   // one-time KVS hookup (no-op after the first)
@@ -153,11 +153,11 @@ struct DriveView: View {
                                 .font(.system(size: 28))
                                 .foregroundStyle(Theme.Palette.textSecondary)
                             Text("Select a file to preview")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Theme.Palette.surface)
+                        .background(Theme.Palette.pane)
                     }
                 }
                 .frame(width: previewWidth)
@@ -237,13 +237,13 @@ struct DriveView: View {
     private var locationsPane: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("LOCATIONS")
-                .font(Theme.Font.cardCaption.weight(.semibold))
+                .font(Theme.Font.label.weight(.semibold))
                 .foregroundStyle(Theme.Palette.textSecondary)
                 .padding(Theme.Spacing.md)
             if locations.roots.isEmpty {
                 VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                     Text("No locations yet.")
-                        .font(Theme.Font.cardBody)
+                        .font(Theme.Font.body)
                         .foregroundStyle(Theme.Palette.textSecondary)
                     Button("Add Location…") { requestLocation() }
                         .buttonStyle(.fluentPrimary)
@@ -316,7 +316,7 @@ struct DriveView: View {
             .scrollContentBackground(.hidden)
             .tint(Theme.Palette.primary)
         }
-        .background(isCompact ? Theme.Palette.surface : Theme.Palette.navPane)
+        .background(isCompact ? Theme.Palette.pane : Theme.Palette.navPane)
         .toolbar {
             ToolbarItem {
                 Menu {
@@ -414,7 +414,7 @@ struct DriveView: View {
                 Text(locations.roots.isEmpty
                      ? "Add a folder to start browsing"
                      : "Select a location")
-                    .font(Theme.Font.cardTitle)
+                    .font(Theme.Font.bodyStrong)
                     .foregroundStyle(Theme.Palette.textPrimary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -447,7 +447,7 @@ struct DriveView: View {
                         navigate(to: crumb)
                     }
                     .buttonStyle(.plain)
-                    .font(Theme.Font.cardBody.weight(index == crumbs.count - 1 ? .semibold : .regular))
+                    .font(Theme.Font.body.weight(index == crumbs.count - 1 ? .semibold : .regular))
                     .foregroundStyle(index == crumbs.count - 1 ? Theme.Palette.textPrimary : Theme.Palette.textSecondary)
                 }
                 Spacer()
@@ -615,7 +615,7 @@ private struct DriveFileList: View {
         VStack(spacing: 0) {
             if let errorText {
                 Text(errorText)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.danger)
                     .padding(Theme.Spacing.sm)
             }
@@ -1082,25 +1082,25 @@ private struct DrivePreviewPane: View {
                     previewContent
                     VStack(spacing: 3) {
                         Text(item.name)
-                            .font(Theme.Font.cardBody.weight(.semibold))
+                            .font(Theme.Font.body.weight(.semibold))
                             .multilineTextAlignment(.center)
                             .lineLimit(3)
                         Text(item.kind)
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.textSecondary)
                         if !item.isDirectory, let size = item.size {
                             Text(ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file))
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                         }
                         if let modified = item.modified {
                             Text("Modified \(modified.formatted(date: .abbreviated, time: .shortened))")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                         }
                         if !item.finderTags.isEmpty {
                             Text(item.finderTags.joined(separator: " · "))
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                         }
                     }
@@ -1112,7 +1112,7 @@ private struct DrivePreviewPane: View {
                 .padding(.bottom, Theme.Spacing.md)
         }
         .frame(maxHeight: .infinity)
-        .background(Theme.Palette.surface)
+        .background(Theme.Palette.pane)
         .task { await loadPreview() }
     }
 
@@ -1144,13 +1144,13 @@ private struct DrivePreviewPane: View {
                 .foregroundStyle(Theme.Palette.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(Theme.Spacing.sm)
-                .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
         } else if let thumbnail {
             Image(platformImage: thumbnail)
                 .resizable()
                 .scaledToFit()
                 .frame(maxHeight: 280)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control))
+                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
         } else {
             DriveIcon(item: item, size: 96)
         }
@@ -1189,7 +1189,7 @@ private struct DriveRow: View {
         HStack(spacing: Theme.Spacing.sm) {
             DriveIcon(item: item, size: 18)
             Text(item.name)
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .lineLimit(1)
             HStack(spacing: 2) {
                 ForEach(item.finderTags.prefix(4), id: \.self) { tag in
@@ -1202,13 +1202,13 @@ private struct DriveRow: View {
             Spacer()
             if !item.isDirectory, let size = item.size {
                 Text(ByteCountFormatter.string(fromByteCount: Int64(size), countStyle: .file))
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .frame(width: 74, alignment: .trailing)
             }
             if let modified = item.modified {
                 Text(modified.formatted(date: .abbreviated, time: .shortened))
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .frame(width: 140, alignment: .trailing)
             }

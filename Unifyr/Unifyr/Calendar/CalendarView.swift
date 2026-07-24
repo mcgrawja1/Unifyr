@@ -78,7 +78,7 @@ struct CalendarView: View {
                 content
             }
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .navigationTitle("Calendar")
         .task {
             await start()
@@ -267,7 +267,7 @@ struct CalendarView: View {
             Spacer(minLength: 0)
         }
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(isCompact ? Theme.Palette.surface : Theme.Palette.navPane)
+        .background(isCompact ? Theme.Palette.pane : Theme.Palette.navPane)
     }
 
     private func calendarToggle(_ cal: CalendarSnapshot) -> some View {
@@ -285,7 +285,7 @@ struct CalendarView: View {
                 Image(systemName: isVisible ? "checkmark.square.fill" : "square")
                     .foregroundStyle(color)
                 Text(cal.title)
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .foregroundStyle(Theme.Palette.textPrimary)
                     .lineLimit(1)
                 Spacer(minLength: 0)
@@ -320,7 +320,7 @@ struct CalendarView: View {
                 HStack(spacing: Theme.Spacing.sm) {
                     Button { showingCalendarsSheet = true } label: { Image(systemName: "sidebar.left") }
                     Text(headerTitle)
-                        .font(Theme.Font.cardTitle)
+                        .font(Theme.Font.bodyStrong)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Spacer()
@@ -329,8 +329,7 @@ struct CalendarView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Theme.Palette.primary)
+                    .buttonStyle(.fluentPrimary)
                 }
                 HStack(spacing: Theme.Spacing.sm) {
                     modePicker
@@ -539,7 +538,7 @@ private struct MonthGridView: View {
             HStack(spacing: 0) {
                 ForEach(Array(calendar.shortWeekdaySymbols.enumerated()), id: \.offset) { _, symbol in
                     Text(symbol)
-                        .font(Theme.Font.cardCaption.weight(.semibold))
+                        .font(Theme.Font.label.weight(.semibold))
                         .foregroundStyle(Theme.Palette.textSecondary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, Theme.Spacing.xs)
@@ -572,7 +571,7 @@ private struct MonthGridView: View {
                                 // ends and the next begins.
                                 .background(
                                     calendar.isDateInWeekend(day)
-                                        ? Theme.Palette.surfaceRaised.opacity(0.45)
+                                        ? Theme.Palette.hover.opacity(0.45)
                                         : Color.clear
                                 )
                                 .overlay(alignment: .trailing) {
@@ -617,7 +616,7 @@ private struct MonthDayCell: View {
             HStack {
                 Spacer()
                 Text(dayNumber)
-                    .font(Theme.Font.cardCaption.weight(isToday ? .bold : .medium))
+                    .font(Theme.Font.label.weight(isToday ? .bold : .medium))
                     .foregroundStyle(
                         isToday
                             ? Theme.Palette.textOnAccent
@@ -751,10 +750,10 @@ private struct TimeGridView: View {
             ForEach(days, id: \.self) { day in
                 VStack(spacing: 1) {
                     Text(day.formatted(.dateTime.weekday(.abbreviated)))
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(calendar.isDateInToday(day) ? Theme.Palette.danger : Theme.Palette.textSecondary)
                     Text(day.formatted(.dateTime.day()))
-                        .font(Theme.Font.cardBody.weight(calendar.isDateInToday(day) ? .bold : .regular))
+                        .font(Theme.Font.body.weight(calendar.isDateInToday(day) ? .bold : .regular))
                         .foregroundStyle(calendar.isDateInToday(day) ? Theme.Palette.danger : Theme.Palette.textPrimary)
                 }
                 .frame(maxWidth: .infinity)
@@ -1056,7 +1055,7 @@ private struct EventBlock: View {
             Spacer(minLength: 0)
         }
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: 4))
+        .background(color.opacity(0.22), in: RoundedRectangle(cornerRadius: Theme.Radius.sm))
         .contentShape(Rectangle())
     }
 }
@@ -1243,16 +1242,16 @@ struct EventEditorView: View {
                     .font(Theme.Font.subtitle)
                     .foregroundStyle(Theme.Palette.textPrimary)
                 TextEditor(text: $notes)
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .frame(minHeight: 60)
                     .scrollContentBackground(.hidden)
                     .padding(4)
-                    .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                    .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
             }
 
             if let errorText {
                 Text(errorText)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.danger)
             }
         }

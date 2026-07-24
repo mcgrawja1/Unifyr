@@ -44,7 +44,7 @@ struct DatabaseViewEditor: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Edit View")
-                .font(Theme.Font.cardTitle)
+                .font(Theme.Font.bodyStrong)
                 .padding(Theme.Spacing.lg)
 
             Divider().overlay(Theme.Palette.separator)
@@ -69,7 +69,7 @@ struct DatabaseViewEditor: View {
                         let dateProperties = properties.filter { $0.propertyKind == .date }
                         if dateProperties.isEmpty {
                             Text("Add a Date property to use a calendar view.")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                         } else {
                             Picker("Date property", selection: .init(
@@ -100,7 +100,7 @@ struct DatabaseViewEditor: View {
 
                     VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                         Text("Filters — rows must match all")
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.textSecondary)
                         ForEach(Array((draft.filters ?? []).enumerated()), id: \.element.id) { index, filter in
                             filterRow(filter, at: index)
@@ -117,7 +117,7 @@ struct DatabaseViewEditor: View {
                             draft.filters = filters
                         } label: {
                             Label("Add Filter", systemImage: "plus")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(Theme.Palette.primary)
@@ -127,7 +127,7 @@ struct DatabaseViewEditor: View {
 
                     VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                         Text("Sorts — applied in order")
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.textSecondary)
                         ForEach(Array((draft.sorts ?? []).enumerated()), id: \.element.id) { index, sort in
                             sortRow(sort, at: index)
@@ -140,7 +140,7 @@ struct DatabaseViewEditor: View {
                             draft.sorts = sorts
                         } label: {
                             Label("Add Sort", systemImage: "plus")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                         }
                         .buttonStyle(.plain)
                         .foregroundStyle(Theme.Palette.primary)
@@ -175,7 +175,7 @@ struct DatabaseViewEditor: View {
             .padding(Theme.Spacing.lg)
         }
         .frame(minWidth: 520, minHeight: 380)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
     }
 
     // MARK: Filter row

@@ -75,7 +75,7 @@ struct UniversalSearchView: View {
                 Text(query.trimmingCharacters(in: .whitespaces).count < 2
                      ? "Type to search across every module."
                      : (searching ? "Searching…" : "No results."))
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -92,11 +92,11 @@ struct UniversalSearchView: View {
                                             .frame(width: 18)
                                         VStack(alignment: .leading, spacing: 1) {
                                             Text(hit.title)
-                                                .font(Theme.Font.cardBody)
+                                                .font(Theme.Font.body)
                                                 .lineLimit(1)
                                             if !hit.subtitle.isEmpty {
                                                 Text(hit.subtitle)
-                                                    .font(Theme.Font.cardCaption)
+                                                    .font(Theme.Font.label)
                                                     .foregroundStyle(Theme.Palette.textSecondary)
                                                     .lineLimit(1)
                                             }
@@ -114,7 +114,7 @@ struct UniversalSearchView: View {
             }
         }
         .frame(width: 560, height: 440)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .onAppear { fieldFocused = true }
         .task(id: query) {
             try? await Task.sleep(for: .milliseconds(200)) // debounce

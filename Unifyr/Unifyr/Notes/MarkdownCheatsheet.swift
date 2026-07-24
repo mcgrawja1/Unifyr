@@ -70,7 +70,7 @@ struct MarkdownCheatsheet: View {
             Image(systemName: "text.badge.checkmark")
                 .foregroundStyle(Theme.Palette.primary)
             Text("Markdown Shortcuts")
-                .font(Theme.Font.cardTitle)
+                .font(Theme.Font.bodyStrong)
             Spacer()
         }
     }
@@ -78,7 +78,7 @@ struct MarkdownCheatsheet: View {
     private func section(_ title: String, rows: [Row]) -> some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             Text(title.uppercased())
-                .font(Theme.Font.cardCaption.weight(.semibold))
+                .font(Theme.Font.label.weight(.semibold))
                 .foregroundStyle(Theme.Palette.textSecondary)
             ForEach(rows) { row in
                 HStack(spacing: Theme.Spacing.md) {
@@ -87,10 +87,10 @@ struct MarkdownCheatsheet: View {
                         .foregroundStyle(Theme.Palette.textPrimary)
                         .padding(.horizontal, Theme.Spacing.sm)
                         .padding(.vertical, Theme.Spacing.xxs)
-                        .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                        .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
                         .frame(width: 96, alignment: .leading)
                     Text(row.label)
-                        .font(Theme.Font.cardBody)
+                        .font(Theme.Font.body)
                         .foregroundStyle(Theme.Palette.textSecondary)
                     Spacer(minLength: 0)
                 }

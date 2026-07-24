@@ -47,7 +47,7 @@ struct AccountSetupView: View {
                 secureField("App password", text: $password)
 
                 Text("Use an app-specific password, not your login password. Gmail/iCloud/Outlook require one when two-factor auth is on.")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
 
                 detectionStatus
@@ -78,7 +78,7 @@ struct AccountSetupView: View {
             .frame(maxWidth: 460)
             .frame(maxWidth: .infinity)
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
     }
 
     private var header: some View {
@@ -89,7 +89,7 @@ struct AccountSetupView: View {
             Text("Add a Mail Account")
                 .font(Theme.Font.display)
             Text("Connect over IMAP/SMTP. Your messages stay on this device and are never synced to iCloud — only these settings sync, and the password rides iCloud Keychain, so your other devices set themselves up.")
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .foregroundStyle(Theme.Palette.textSecondary)
         }
     }
@@ -108,7 +108,7 @@ struct AccountSetupView: View {
 
     private func serverRow(_ label: String, host: Binding<String>, port: Binding<Int>) -> some View {
         HStack(spacing: Theme.Spacing.sm) {
-            Text(label).font(Theme.Font.cardCaption).frame(width: 44, alignment: .leading)
+            Text(label).font(Theme.Font.label).frame(width: 44, alignment: .leading)
             TextField("host", text: host)
                 .textFieldStyle(.roundedBorder)
                 #if os(iOS)
@@ -125,15 +125,15 @@ struct AccountSetupView: View {
     private var detectionStatus: some View {
         if isDetecting {
             Label("Looking up \(domainOf(email))…", systemImage: "magnifyingglass")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
         } else if let warning = detection?.warning {
             Label(warning, systemImage: "exclamationmark.triangle")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.danger)
         } else if let summary = detection?.summary {
             Label(summary, systemImage: "checkmark.circle")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.primary)
         }
     }

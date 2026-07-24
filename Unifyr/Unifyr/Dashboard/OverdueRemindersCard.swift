@@ -48,12 +48,12 @@ struct OverdueRemindersCard: View {
                             .buttonStyle(.plain)
                             VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                                 Text(reminder.title)
-                                    .font(Theme.Font.cardBody)
+                                    .font(Theme.Font.body)
                                     .foregroundStyle(Theme.Palette.textPrimary)
                                     .lineLimit(1)
                                 if let due = reminder.dueDate {
                                     Text(due.formatted(date: .abbreviated, time: .shortened))
-                                        .font(Theme.Font.cardCaption)
+                                        .font(Theme.Font.label)
                                         .foregroundStyle(Theme.Palette.danger)
                                 }
                             }

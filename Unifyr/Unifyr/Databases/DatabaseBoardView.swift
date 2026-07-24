@@ -105,11 +105,11 @@ struct DatabaseBoardView: View {
                     OptionChip(option: option)
                 } else {
                     Text("No \(groupProperty.name)")
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                 }
                 Text("\(rows.count)")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                 Spacer()
             }
@@ -129,7 +129,7 @@ struct DatabaseBoardView: View {
                 openRow(row)
             } label: {
                 Label("New", systemImage: "plus")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .padding(Theme.Spacing.xs)
                     .contentShape(Rectangle())
@@ -138,10 +138,10 @@ struct DatabaseBoardView: View {
         }
         .padding(Theme.Spacing.sm)
         .frame(width: 260, alignment: .top)
-        .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+        .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
         // The targeted column glows so drops land with confidence.
         .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.control)
+            RoundedRectangle(cornerRadius: Theme.Radius.md)
                 .strokeBorder(
                     dropTargetKey == columnKey(option) ? Theme.Palette.primary : .clear,
                     lineWidth: 2
@@ -183,19 +183,19 @@ struct DatabaseBoardView: View {
         } label: {
             VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                 Text(store.rowTitle(row.id, titleProperty: titleProperty))
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
                 if let summary, !summary.isEmpty {
                     Text(summary)
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                         .lineLimit(1)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Theme.Spacing.sm)
-            .background(Theme.Palette.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+            .background(Theme.Palette.pane, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

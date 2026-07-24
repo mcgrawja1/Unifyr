@@ -18,15 +18,15 @@ struct AskClaudeCard: View {
         DashboardCard(title: "Ask Claude", systemImage: "sparkles", accent: Theme.Palette.claude) {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 Text("Ask about your day, mail, or notes — this opens the chat.")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                 HStack(spacing: Theme.Spacing.sm) {
                     TextField("Ask Claude…", text: $text, axis: .vertical)
                         .textFieldStyle(.plain)
-                        .font(Theme.Font.cardBody)
+                        .font(Theme.Font.body)
                         .lineLimit(1...3)
                         .padding(Theme.Spacing.sm)
-                        .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                        .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
                         .onSubmit(ask)
                     Button(action: ask) {
                         Image(systemName: "arrow.up.circle.fill")

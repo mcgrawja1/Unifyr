@@ -90,7 +90,7 @@ struct NotesView: View {
                 }
             }
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .navigationTitle("Notes")
         // Editor slash command "Link to note" → show the picker; the choice
         // goes back to the editor bridge as an insertNoteLink notification.
@@ -309,7 +309,7 @@ struct NotesView: View {
                                 Text("Recently Deleted")
                                 Spacer()
                                 Text("\(trashRoots.count)")
-                                    .font(Theme.Font.cardCaption)
+                                    .font(Theme.Font.label)
                                     .foregroundStyle(Theme.Palette.textSecondary)
                             }
                             .contentShape(Rectangle())
@@ -328,7 +328,7 @@ struct NotesView: View {
                                 showingTrash = false
                             }
                             .buttonStyle(.plain)
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.danger)
                         }
                     }
@@ -338,7 +338,7 @@ struct NotesView: View {
             .scrollContentBackground(.hidden)
             .tint(Theme.Palette.primary)
         }
-        .background(isCompact ? Theme.Palette.surface : Theme.Palette.navPane)
+        .background(isCompact ? Theme.Palette.pane : Theme.Palette.navPane)
     }
 
     // MARK: Tree flattening
@@ -461,7 +461,7 @@ struct NotesView: View {
 
             Text(note.emoji ?? (note.kind == .database ? "📊" : "📄"))
             Text(note.title.isEmpty ? "Untitled" : note.title)
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .lineLimit(1)
             TagDots(kind: TagKind.note, key: note.id.uuidString)
             Spacer(minLength: 0)
@@ -524,11 +524,11 @@ struct NotesView: View {
             Text(note.emoji ?? (note.kind == .database ? "📊" : "📄"))
             VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(note.title.isEmpty ? "Untitled" : note.title)
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .lineLimit(1)
                 if let deletedAt = note.deletedAt {
                     Text("Deleted \(deletedAt.formatted(date: .abbreviated, time: .shortened))")
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                 }
             }
@@ -699,7 +699,7 @@ private struct PageHost: View {
                     if repositioningCover {
                         HStack(spacing: Theme.Spacing.sm) {
                             Text("Drag the photo to position it")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textOnAccent)
                             Button("Done") { repositioningCover = false }
                                 .buttonStyle(.fluentPrimary)
@@ -744,13 +744,13 @@ private struct PageHost: View {
                                 open(ancestor)
                             } label: {
                                 Text("\(ancestor.emoji ?? (ancestor.kind == .database ? "📊" : "📄")) \(ancestor.title.isEmpty ? "Untitled" : ancestor.title)")
-                                    .font(Theme.Font.cardCaption)
+                                    .font(Theme.Font.label)
                                     .foregroundStyle(Theme.Palette.textSecondary)
                                     .lineLimit(1)
                             }
                             .buttonStyle(.plain)
                             Text("/")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                         }
                     }
@@ -869,11 +869,11 @@ private struct PageHost: View {
                                 open(child)
                             } label: {
                                 Text("\(child.emoji ?? (child.kind == .database ? "📊" : "📄")) \(child.title.isEmpty ? "Untitled" : child.title)")
-                                    .font(Theme.Font.cardCaption)
+                                    .font(Theme.Font.label)
                                     .lineLimit(1)
                                     .padding(.horizontal, Theme.Spacing.sm)
                                     .padding(.vertical, Theme.Spacing.xs)
-                                    .background(Theme.Palette.surfaceRaised, in: Capsule())
+                                    .background(Theme.Palette.hover, in: Capsule())
                             }
                             .buttonStyle(.plain)
                         }
@@ -882,7 +882,7 @@ private struct PageHost: View {
                             Button("New Sub-database") { addSubPage(note, true) }
                         } label: {
                             Image(systemName: "plus")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                                 .padding(Theme.Spacing.xs)
                         }
@@ -921,7 +921,7 @@ private struct PageHost: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .task(id: note.id) {
             backlinks = NotesStore(context: context).backlinkSources(to: note.id)
         }
@@ -960,14 +960,14 @@ private struct PageHost: View {
     private var backlinksChips: some View {
         HStack(spacing: Theme.Spacing.sm) {
             Label("Linked from", systemImage: "arrow.uturn.backward")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
             ForEach(backlinks) { source in
                 Button {
                     open(source)
                 } label: {
                     Text("\(source.emoji ?? (source.kind == .database ? "📊" : "📄")) \(source.title.isEmpty ? "Untitled" : source.title)")
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .lineLimit(1)
                         .padding(.horizontal, Theme.Spacing.sm)
                         .padding(.vertical, Theme.Spacing.xs)
@@ -1035,10 +1035,10 @@ private struct PageCoverView: View {
                     storedY: props.coverOffsetY ?? 0.5
                 )
             } else {
-                Theme.Palette.surfaceRaised
+                Theme.Palette.hover
             }
         default:
-            Theme.Palette.surfaceRaised
+            Theme.Palette.hover
         }
     }
 
@@ -1112,7 +1112,7 @@ private struct CoverPicker: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             Text("Gradients")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
             LazyVGrid(columns: Array(repeating: GridItem(.fixed(72)), count: 3), spacing: Theme.Spacing.sm) {
                 ForEach(Array(CoverPresets.gradients.enumerated()), id: \.offset) { _, pair in
@@ -1125,14 +1125,14 @@ private struct CoverPicker: View {
                             endPoint: .bottomTrailing
                         )
                         .frame(width: 72, height: 36)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
                     }
                     .buttonStyle(.plain)
                 }
             }
 
             Text("Colors")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
             LazyVGrid(columns: Array(repeating: GridItem(.fixed(72)), count: 3), spacing: Theme.Spacing.sm) {
                 ForEach(CoverPresets.colors, id: \.self) { hex in
@@ -1141,7 +1141,7 @@ private struct CoverPicker: View {
                     } label: {
                         (Color(hexString: hex) ?? .blue)
                             .frame(width: 72, height: 36)
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
                     }
                     .buttonStyle(.plain)
                 }
@@ -1274,7 +1274,7 @@ private struct NoteLinkPicker: View {
                         HStack(spacing: Theme.Spacing.sm) {
                             Text(note.emoji ?? (note.kind == .database ? "📊" : "📄"))
                             Text(note.title.isEmpty ? "Untitled" : note.title)
-                                .font(Theme.Font.cardBody)
+                                .font(Theme.Font.body)
                                 .lineLimit(1)
                             Spacer()
                         }
@@ -1295,7 +1295,7 @@ private struct NoteLinkPicker: View {
             .padding(Theme.Spacing.md)
         }
         .frame(width: 380, height: 420)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
     }
 
     private func pick(_ note: Note) {

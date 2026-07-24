@@ -52,7 +52,7 @@ struct HomeAssistantConnectSheet: View {
                 if let errorText {
                     Section {
                         Label(errorText, systemImage: "exclamationmark.triangle")
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.danger)
                     }
                 }

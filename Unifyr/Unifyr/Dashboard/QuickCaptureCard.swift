@@ -36,10 +36,10 @@ struct QuickCaptureCard: View {
                 HStack(spacing: Theme.Spacing.sm) {
                     TextField(mode == .note ? "New note…" : "New reminder…", text: $text, axis: .vertical)
                         .textFieldStyle(.plain)
-                        .font(Theme.Font.cardBody)
+                        .font(Theme.Font.body)
                         .lineLimit(1...3)
                         .padding(Theme.Spacing.sm)
-                        .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                        .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
                         .onSubmit(add)
                     Button(action: add) {
                         Image(systemName: "arrow.up.circle.fill")
@@ -56,7 +56,7 @@ struct QuickCaptureCard: View {
                         Image(systemName: "checkmark.circle")
                         Text(confirmation)
                     }
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.success)
                     .transition(.opacity)
                 }

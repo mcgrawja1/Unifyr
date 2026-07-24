@@ -190,7 +190,7 @@ private struct MailModuleContent: View {
                 }
             }
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .onChange(of: searchText) { _, newValue in
             if newValue.isEmpty { Task { await syncSelection() } }
         }
@@ -583,7 +583,7 @@ private struct MailModuleContent: View {
                 Task { await syncSelection() }
             }
         }
-        .background(isCompact ? Theme.Palette.surface : Theme.Palette.navPane)
+        .background(isCompact ? Theme.Palette.pane : Theme.Palette.navPane)
     }
 
     private var messageListPane: some View {
@@ -727,7 +727,7 @@ private struct MailModuleContent: View {
         HStack(spacing: Theme.Spacing.sm) {
             Image(systemName: "exclamationmark.triangle")
             Text(service.ruleErrors[rule.id] ?? "")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
             Button("Disable Rule") {
@@ -760,7 +760,7 @@ private struct MailModuleContent: View {
     private func banner(_ text: String, systemImage: String, tint: Color) -> some View {
         HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: systemImage)
-            Text(text).font(Theme.Font.cardCaption).lineLimit(2)
+            Text(text).font(Theme.Font.label).lineLimit(2)
             Spacer(minLength: 0)
         }
         .foregroundStyle(tint)
@@ -1019,11 +1019,11 @@ private struct MessageRow: View {
                     if showsRecipient {
                         (Text("To: ").foregroundStyle(Theme.Palette.textSecondary)
                             + Text(counterpartyName))
-                            .font(Theme.Font.cardBody.weight(message.isSeen ? .regular : .semibold))
+                            .font(Theme.Font.body.weight(message.isSeen ? .regular : .semibold))
                             .lineLimit(1)
                     } else {
                         Text(counterpartyName)
-                            .font(Theme.Font.cardBody.weight(message.isSeen ? .regular : .semibold))
+                            .font(Theme.Font.body.weight(message.isSeen ? .regular : .semibold))
                             .lineLimit(1)
                     }
                     Spacer()
@@ -1033,7 +1033,7 @@ private struct MessageRow: View {
                             .foregroundStyle(Theme.Palette.warning)
                     }
                     Text(message.date.formatted(date: .abbreviated, time: .omitted))
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                 }
                 HStack(spacing: Theme.Spacing.xs) {
@@ -1045,13 +1045,13 @@ private struct MessageRow: View {
                         }
                     }
                     Text(message.subject)
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(message.isSeen ? Theme.Palette.textSecondary : Theme.Palette.textPrimary)
                         .lineLimit(1)
                     if let origin {
                         Spacer(minLength: 0)
                         Text(origin)
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(originColor)
                             .padding(.horizontal, Theme.Spacing.xs)
                             .background(originColor.opacity(0.12), in: Capsule())
@@ -1102,29 +1102,29 @@ private struct MessageDetailView: View {
                 HStack(spacing: Theme.Spacing.sm) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(message.fromName.isEmpty ? message.fromAddress : message.fromName)
-                            .font(Theme.Font.cardBody.weight(.semibold))
+                            .font(Theme.Font.body.weight(.semibold))
                         if !message.fromName.isEmpty {
-                            Text(message.fromAddress).font(Theme.Font.cardCaption)
+                            Text(message.fromAddress).font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                         }
                         // Recipients — essential when reading Sent (where
                         // "from" is yourself), useful everywhere.
                         if !message.toRecipients.isEmpty || !message.toAddressList.isEmpty {
                             Text("To: \(message.toRecipients.isEmpty ? message.toAddressList : message.toRecipients)")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                                 .lineLimit(2)
                         }
                         if !message.ccAddressList.isEmpty {
                             Text("Cc: \(message.ccAddressList)")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                                 .lineLimit(1)
                         }
                     }
                     Spacer()
                     Text(message.date.formatted(date: .abbreviated, time: .shortened))
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                     Button { onCompose(.reply(message, all: false)) } label: {
                         Image(systemName: "arrowshape.turn.up.left")
@@ -1166,7 +1166,7 @@ private struct MessageDetailView: View {
             if let feedback {
                 HStack(spacing: Theme.Spacing.xs) {
                     Image(systemName: "checkmark.circle")
-                    Text(feedback).font(Theme.Font.cardCaption)
+                    Text(feedback).font(Theme.Font.label)
                     Spacer(minLength: 0)
                 }
                 .foregroundStyle(Theme.Palette.success)
@@ -1194,10 +1194,10 @@ private struct MessageDetailView: View {
                     Image(systemName: "eye.slash")
                         .foregroundStyle(Theme.Palette.textSecondary)
                     Text("Remote images blocked for privacy.")
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                     Button("Load Images") { loadImagesOverride = true }
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                     Spacer()
                 }
                 .padding(.horizontal, Theme.Spacing.xl)
@@ -1218,7 +1218,7 @@ private struct MessageDetailView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .sheet(item: $eventSheet) { sheet in
             EventFromEmailView(message: sheet.message, onFeedback: showFeedback)
         }
@@ -1280,11 +1280,11 @@ private struct AttachmentChip: View {
                     .foregroundStyle(Theme.Palette.primary)
                 VStack(alignment: .leading, spacing: 0) {
                     Text(attachment.filename)
-                        .font(Theme.Font.cardCaption.weight(.medium))
+                        .font(Theme.Font.label.weight(.medium))
                         .foregroundStyle(Theme.Palette.textPrimary)
                         .lineLimit(1)
                     Text(sizeLabel)
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                 }
                 Image(systemName: "square.and.arrow.down")
@@ -1293,7 +1293,7 @@ private struct AttachmentChip: View {
             }
             .padding(.horizontal, Theme.Spacing.sm)
             .padding(.vertical, Theme.Spacing.xs)
-            .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+            .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
         }
         .buttonStyle(.plain)
         .help("Save \(attachment.filename)")

@@ -50,7 +50,7 @@ struct ClockView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .navigationTitle("Clock")
     }
 
@@ -103,7 +103,7 @@ private struct StopwatchView: View {
                         laps = []
                     }
                 }
-                .buttonStyle(ClockButtonStyle(tint: Theme.Palette.surfaceRaised, fg: Theme.Palette.textPrimary))
+                .buttonStyle(ClockButtonStyle(tint: Theme.Palette.hover, fg: Theme.Palette.textPrimary))
                 .disabled(!running && accumulated == 0)
 
                 Button(running ? "Stop" : "Start") {
@@ -226,7 +226,7 @@ private struct TimerView: View {
             .pickerStyle(.wheel)
             .labelsHidden()
             Text(label)
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
         }
     }
@@ -252,7 +252,7 @@ private struct TimerView: View {
             Stepper(label, value: selection, in: range)
                 .labelsHidden()
             Text(label)
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
         }
     }
@@ -317,7 +317,7 @@ private struct AlarmView: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Alarms")
-                    .font(Theme.Font.cardTitle)
+                    .font(Theme.Font.bodyStrong)
                 Spacer()
                 Button {
                     editing = AlarmItem(hour: 7, minute: 0, label: "Alarm", enabled: true, repeatsDaily: true)
@@ -342,7 +342,7 @@ private struct AlarmView: View {
                                     .font(.system(size: 30, weight: .light, design: .rounded))
                                     .foregroundStyle(alarm.enabled ? Theme.Palette.textPrimary : Theme.Palette.textSecondary)
                                 Text(alarm.label + (alarm.repeatsDaily ? " · Daily" : " · Once"))
-                                    .font(Theme.Font.cardCaption)
+                                    .font(Theme.Font.label)
                                     .foregroundStyle(Theme.Palette.textSecondary)
                             }
                             Spacer()
@@ -411,7 +411,7 @@ private struct AlarmEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-            Text("Alarm").font(Theme.Font.cardTitle)
+            Text("Alarm").font(Theme.Font.bodyStrong)
             DatePicker("Time", selection: timeBinding, displayedComponents: .hourAndMinute)
                 .platformFieldDatePicker()
             TextField("Label", text: $alarm.label).textFieldStyle(.roundedBorder)
@@ -429,7 +429,7 @@ private struct AlarmEditor: View {
         }
         .padding(Theme.Spacing.xl)
         .frame(width: 340)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
     }
 }
 

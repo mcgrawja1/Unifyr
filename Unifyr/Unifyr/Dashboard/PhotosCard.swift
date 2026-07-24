@@ -106,12 +106,12 @@ struct PhotoThumbnail: View {
                     .scaledToFill()
             } else {
                 Rectangle()
-                    .fill(Theme.Palette.surfaceRaised)
+                    .fill(Theme.Palette.hover)
                     .overlay(ProgressView().controlSize(.small))
             }
         }
         .frame(width: side, height: side)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control))
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
         .overlay(alignment: .topTrailing) {
             if photo.isFavorite {
                 Image(systemName: "heart.fill")

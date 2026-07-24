@@ -56,7 +56,7 @@ struct ClaudeChatView: View {
                         HStack(spacing: Theme.Spacing.xs) {
                             ProgressView().controlSize(.small)
                             Text("Running \(name)…")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                         }
                     }
@@ -73,7 +73,7 @@ struct ClaudeChatView: View {
     private var emptyState: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             Text("Ask about your day, your mail, your notes — Claude has Unifyr's tools.")
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .foregroundStyle(Theme.Palette.textSecondary)
             ForEach(["What needs my attention today?",
                      "Summarize my unread email.",
@@ -82,7 +82,7 @@ struct ClaudeChatView: View {
                     controller.send(suggestion)
                 } label: {
                     Text(suggestion)
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.claude)
                         .padding(.horizontal, Theme.Spacing.sm)
                         .padding(.vertical, Theme.Spacing.xs)
@@ -101,19 +101,19 @@ struct ClaudeChatView: View {
             HStack {
                 Spacer(minLength: 60)
                 Text(entry.text)
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .foregroundStyle(Theme.Palette.textOnAccent)
                     .padding(Theme.Spacing.md)
-                    .background(Theme.Palette.claude, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+                    .background(Theme.Palette.claude, in: RoundedRectangle(cornerRadius: Theme.Radius.lg))
                     .textSelection(.enabled)
             }
         case .assistant:
             HStack {
                 Text(entry.text.isEmpty ? "…" : entry.text)
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .foregroundStyle(Theme.Palette.textPrimary)
                     .padding(Theme.Spacing.md)
-                    .background(Theme.Palette.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+                    .background(Theme.Palette.pane, in: RoundedRectangle(cornerRadius: Theme.Radius.lg))
                     .textSelection(.enabled)
                 Spacer(minLength: 60)
             }
@@ -122,14 +122,14 @@ struct ClaudeChatView: View {
                 Image(systemName: "wrench.adjustable")
                 Text(name)
             }
-            .font(Theme.Font.cardCaption)
+            .font(Theme.Font.label)
             .foregroundStyle(Theme.Palette.claude)
             .padding(.horizontal, Theme.Spacing.sm)
             .padding(.vertical, Theme.Spacing.xxs)
             .background(Theme.Palette.claude.opacity(0.1), in: Capsule())
         case .notice:
             Text(entry.text)
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
         }
     }
@@ -141,11 +141,11 @@ struct ClaudeChatView: View {
     private func confirmationCard(_ pending: ClaudeChatController.PendingToolConfirmation) -> some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             Text(pending.title)
-                .font(Theme.Font.cardBody.weight(.semibold))
+                .font(Theme.Font.body.weight(.semibold))
                 .foregroundStyle(Theme.Palette.textPrimary)
             if !pending.detail.isEmpty {
                 Text(pending.detail)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .textSelection(.enabled)
             }
@@ -158,9 +158,9 @@ struct ClaudeChatView: View {
             }
         }
         .padding(Theme.Spacing.md)
-        .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+        .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.lg))
         .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.lg)
                 .strokeBorder(Theme.Palette.claude.opacity(0.4))
         )
         .padding(.horizontal, Theme.Spacing.lg)
@@ -174,7 +174,7 @@ struct ClaudeChatView: View {
             if case .error(let message) = controller.phase {
                 HStack(spacing: Theme.Spacing.xs) {
                     Image(systemName: "exclamationmark.triangle")
-                    Text(message).font(Theme.Font.cardCaption)
+                    Text(message).font(Theme.Font.label)
                     Spacer()
                 }
                 .foregroundStyle(Theme.Palette.danger)
@@ -183,10 +183,10 @@ struct ClaudeChatView: View {
             HStack(spacing: Theme.Spacing.sm) {
                 TextField("Message Claude…", text: $draft, axis: .vertical)
                     .textFieldStyle(.plain)
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .lineLimit(1...5)
                     .padding(Theme.Spacing.sm)
-                    .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                    .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
                     .onSubmit(sendDraft)
 
                 if controller.phase == .streaming || isRunningTools {
@@ -227,11 +227,11 @@ struct ClaudeChatView: View {
                     Text("· \(controller.inputTokens.formatted()) in · \(controller.outputTokens.formatted()) out tokens")
                 }
             }
-            .font(Theme.Font.cardCaption)
+            .font(Theme.Font.label)
             .foregroundStyle(Theme.Palette.textSecondary)
         }
         .padding(.vertical, Theme.Spacing.md)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
     }
 
     private var isRunningTools: Bool {
@@ -253,7 +253,7 @@ struct ClaudeChatView: View {
                 DashboardCard(title: "Chat with Claude in Unifyr", systemImage: "sparkles", accent: Theme.Palette.claude) {
                     VStack(alignment: .leading, spacing: Theme.Spacing.md) {
                         Text("Add an Anthropic API key to chat with Claude right here — with full access to Unifyr's tools. Usage is billed per token to your API account (separate from your Claude subscription); typical chats cost fractions of a cent.")
-                            .font(Theme.Font.cardBody)
+                            .font(Theme.Font.body)
                             .foregroundStyle(Theme.Palette.textSecondary)
                         HStack(spacing: Theme.Spacing.md) {
                             Button("Add API Key…") { showingSettings = true }
@@ -290,16 +290,16 @@ struct ClaudeSettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-            Text("Claude Settings").font(Theme.Font.cardTitle)
+            Text("Claude Settings").font(Theme.Font.bodyStrong)
 
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 Text("ANTHROPIC API KEY")
-                    .font(Theme.Font.cardCaption.weight(.semibold))
+                    .font(Theme.Font.label.weight(.semibold))
                     .foregroundStyle(Theme.Palette.textSecondary)
                 SecureField(controller.hasKey ? "•••••••• (saved)" : "sk-ant-…", text: $keyDraft)
                     .textFieldStyle(.roundedBorder)
                 Text("Stored in your Keychain. Billed per use to your Anthropic API account.")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                 if controller.hasKey {
                     Button("Remove Key", role: .destructive) {
@@ -308,14 +308,14 @@ struct ClaudeSettingsView: View {
                         controller.clearConversation()
                     }
                     .buttonStyle(.plain)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.danger)
                 }
             }
 
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 Text("MODEL")
-                    .font(Theme.Font.cardCaption.weight(.semibold))
+                    .font(Theme.Font.label.weight(.semibold))
                     .foregroundStyle(Theme.Palette.textSecondary)
                 Picker("", selection: $selectedModel) {
                     ForEach(ClaudeChatController.models, id: \.id) { model in
@@ -333,7 +333,7 @@ struct ClaudeSettingsView: View {
 
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 Text("BRIEFING WEATHER LOCATION")
-                    .font(Theme.Font.cardCaption.weight(.semibold))
+                    .font(Theme.Font.label.weight(.semibold))
                     .foregroundStyle(Theme.Palette.textSecondary)
                 TextField("City, State", text: $weatherLocation)
                     .textFieldStyle(.roundedBorder)
@@ -360,7 +360,7 @@ struct ClaudeSettingsView: View {
         }
         .padding(Theme.Spacing.lg)
         .frame(width: 420)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .onAppear {
             selectedModel = controller.model
             weatherLocation = UserDefaults.standard.string(forKey: "briefing.location") ?? "Kingsland, GA"

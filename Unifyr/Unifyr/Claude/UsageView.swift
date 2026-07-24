@@ -76,7 +76,7 @@ struct UsageView: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             HStack {
                 Text("ANTHROPIC ACCOUNT (BILLED)")
-                    .font(Theme.Font.cardCaption.weight(.semibold))
+                    .font(Theme.Font.label.weight(.semibold))
                     .foregroundStyle(Theme.Palette.textSecondary)
                 Spacer()
                 if fetchingRemote { ProgressView().controlSize(.small) }
@@ -84,7 +84,7 @@ struct UsageView: View {
             if hasAdminKey {
                 if let remoteError {
                     Text(remoteError)
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.danger)
                         .fixedSize(horizontal: false, vertical: true)
                     Button("Remove Admin Key") {
@@ -93,29 +93,29 @@ struct UsageView: View {
                         remoteDays = []
                         self.remoteError = nil
                     }
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                 } else if remoteDays.isEmpty {
                     Text(fetchingRemote ? "Fetching from Anthropic…" : "No billed costs in the last 30 days (or not yet fetched — click Refresh).")
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                 } else {
                     let total = remoteDays.reduce(0) { $0 + $1.totalDollars }
                     Text(String(format: "$%.2f", total))
                         .font(Theme.Font.metricNumber)
                     Text("Last 30 days, straight from Anthropic's Cost API — this matches the console cost page.")
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                     ForEach(remoteDays.prefix(10)) { day in
                         HStack(alignment: .firstTextBaseline) {
                             Text(day.day.formatted(date: .abbreviated, time: .omitted))
-                                .font(Theme.Font.cardBody)
+                                .font(Theme.Font.body)
                             Spacer()
                             Text(day.byModel.keys.sorted().joined(separator: " · "))
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                                 .lineLimit(1)
                             Text(String(format: "$%.2f", day.totalDollars))
-                                .font(Theme.Font.cardBody.weight(.semibold))
+                                .font(Theme.Font.body.weight(.semibold))
                                 .frame(width: 80, alignment: .trailing)
                         }
                         .padding(.vertical, 2)
@@ -124,7 +124,7 @@ struct UsageView: View {
                 }
             } else {
                 Text("Connect Anthropic's Cost API to show your real billed costs here (exactly the console cost page). Requires an ADMIN API key — Anthropic only issues those to organizations, so an individual account first needs Console → Settings → Organization, then Settings → Admin keys.")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: Theme.Spacing.sm) {
@@ -142,12 +142,12 @@ struct UsageView: View {
                     .disabled(adminKeyDraft.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
                 Text("Without it, the sections below still track every call Unifyr itself makes (estimates).")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
             }
         }
         .padding(Theme.Spacing.lg)
-        .background(Theme.Palette.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+        .background(Theme.Palette.pane, in: RoundedRectangle(cornerRadius: Theme.Radius.lg))
     }
 
     // MARK: Sections
@@ -156,16 +156,16 @@ struct UsageView: View {
         HStack(spacing: Theme.Spacing.md) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("API Usage")
-                    .font(Theme.Font.cardTitle)
+                    .font(Theme.Font.bodyStrong)
                 Text("Billed account costs (with an Admin key) plus Unifyr's own call log (chat + daily briefings; recording began 2026-07-11 — earlier calls exist only in the console). Estimates use list prices.")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer()
             if let loadedAt {
                 Text("as of \(loadedAt.formatted(date: .omitted, time: .shortened))")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
             }
             Button {
@@ -191,18 +191,18 @@ struct UsageView: View {
     private func summaryCard(_ title: String, entries: [UsageEntry]) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title.uppercased())
-                .font(Theme.Font.cardCaption.weight(.semibold))
+                .font(Theme.Font.label.weight(.semibold))
                 .foregroundStyle(Theme.Palette.textSecondary)
             Text(dollars(entries.reduce(0) { $0 + UsageLedger.cost(of: $1) }))
                 .font(Theme.Font.metricNumber)
                 .foregroundStyle(Theme.Palette.textPrimary)
             Text("\(entries.count) calls · \(tokenTotal(entries)) tokens")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
         }
         .padding(Theme.Spacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.Palette.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+        .background(Theme.Palette.pane, in: RoundedRectangle(cornerRadius: Theme.Radius.lg))
     }
 
     @ViewBuilder
@@ -216,22 +216,22 @@ struct UsageView: View {
         if !byModel.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 Text("BY MODEL — verify what you're actually using")
-                    .font(Theme.Font.cardCaption.weight(.semibold))
+                    .font(Theme.Font.label.weight(.semibold))
                     .foregroundStyle(Theme.Palette.textSecondary)
                 ForEach(byModel, id: \.model) { group in
                     HStack {
                         Text(UsageLedger.displayName(for: group.model))
-                            .font(Theme.Font.cardBody.weight(.medium))
+                            .font(Theme.Font.body.weight(.medium))
                         Spacer()
                         Text("\(group.entries.count) calls")
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.textSecondary)
                         Text(tokenTotal(group.entries) + " tok")
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.textSecondary)
                             .frame(width: 90, alignment: .trailing)
                         Text(dollars(group.entries.reduce(0) { $0 + UsageLedger.cost(of: $1) }))
-                            .font(Theme.Font.cardBody.weight(.semibold))
+                            .font(Theme.Font.body.weight(.semibold))
                             .frame(width: 80, alignment: .trailing)
                     }
                     .padding(.vertical, Theme.Spacing.xs)
@@ -239,7 +239,7 @@ struct UsageView: View {
                 }
             }
             .padding(Theme.Spacing.lg)
-            .background(Theme.Palette.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+            .background(Theme.Palette.pane, in: RoundedRectangle(cornerRadius: Theme.Radius.lg))
         }
     }
 
@@ -252,19 +252,19 @@ struct UsageView: View {
         if !byDay.isEmpty {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 Text("RECENT DAYS")
-                    .font(Theme.Font.cardCaption.weight(.semibold))
+                    .font(Theme.Font.label.weight(.semibold))
                     .foregroundStyle(Theme.Palette.textSecondary)
                 ForEach(Array(byDay), id: \.day) { group in
                     HStack {
                         Text(group.day.formatted(date: .abbreviated, time: .omitted))
-                            .font(Theme.Font.cardBody)
+                            .font(Theme.Font.body)
                         Spacer()
                         // Which model(s) that day — the "was that Opus?" check.
                         Text(daySummary(group.entries))
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.textSecondary)
                         Text(dollars(group.entries.reduce(0) { $0 + UsageLedger.cost(of: $1) }))
-                            .font(Theme.Font.cardBody.weight(.semibold))
+                            .font(Theme.Font.body.weight(.semibold))
                             .frame(width: 80, alignment: .trailing)
                     }
                     .padding(.vertical, Theme.Spacing.xs)
@@ -272,7 +272,7 @@ struct UsageView: View {
                 }
             }
             .padding(Theme.Spacing.lg)
-            .background(Theme.Palette.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+            .background(Theme.Palette.pane, in: RoundedRectangle(cornerRadius: Theme.Radius.lg))
         } else {
             EmptyStateLine(text: "No API calls recorded yet. Usage from before this feature shipped isn't included — check the Anthropic console for history.")
         }
@@ -281,11 +281,11 @@ struct UsageView: View {
     private var footer: some View {
         HStack {
             Link("Open Anthropic Console Cost Page", destination: URL(string: "https://platform.claude.com/cost")!)
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
             Spacer()
             Button("Clear History…", role: .destructive) { confirmingClear = true }
                 .buttonStyle(.plain)
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.danger)
         }
     }

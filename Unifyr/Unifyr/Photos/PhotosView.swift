@@ -40,7 +40,7 @@ struct PhotosView: View {
                 grid
             }
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .navigationTitle("Photos")
         .task { await start() }
         .sheet(item: $preview) { photo in
@@ -136,7 +136,7 @@ private struct SquareThumbnail: View {
                 PhotoThumbnail(photo: photo, side: 180)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             )
-            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.control))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md))
     }
 }
 
@@ -161,7 +161,7 @@ private struct PhotoPreview: View {
             HStack {
                 if let date = photo.creationDate {
                     Text(date.formatted(date: .long, time: .shortened))
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                 }
                 if photo.isFavorite {
@@ -174,7 +174,7 @@ private struct PhotoPreview: View {
         }
         .padding(Theme.Spacing.lg)
         .frame(minWidth: 520, minHeight: 420)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .task {
             imageData = await brokers.photos.thumbnail(for: photo.id, maxPixels: 1600)
         }

@@ -24,10 +24,10 @@ struct DashboardCard<Content: View, Accessory: View>: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             HStack(spacing: Theme.Spacing.sm) {
                 Image(systemName: systemImage)
-                    .font(Theme.Font.cardTitle)
+                    .font(Theme.Font.bodyStrong)
                     .foregroundStyle(accent)
                 Text(title)
-                    .font(Theme.Font.cardTitle)
+                    .font(Theme.Font.bodyStrong)
                     .foregroundStyle(Theme.Palette.textPrimary)
                 Spacer(minLength: Theme.Spacing.sm)
                 accessory()
@@ -36,15 +36,10 @@ struct DashboardCard<Content: View, Accessory: View>: View {
         }
         .padding(Theme.Spacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.Palette.surface, in: RoundedRectangle(cornerRadius: Theme.Radius.card))
+        .background(Theme.Palette.pane, in: RoundedRectangle(cornerRadius: Theme.Radius.lg))
         .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.card)
+            RoundedRectangle(cornerRadius: Theme.Radius.lg)
                 .strokeBorder(Theme.Palette.separator, lineWidth: 1)
-        )
-        .shadow(
-            color: Theme.Shadow.card.color,
-            radius: Theme.Shadow.card.radius,
-            y: Theme.Shadow.card.y
         )
     }
 }
@@ -90,7 +85,7 @@ struct ConnectPrompt: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             Text("Connect \(moduleName) to see it here.")
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .foregroundStyle(Theme.Palette.textSecondary)
             Button {
                 Task {
@@ -107,11 +102,11 @@ struct ConnectPrompt: View {
                     }
                     Text("Connect \(moduleName)")
                 }
-                .font(Theme.Font.cardBody.weight(.medium))
+                .font(Theme.Font.body.weight(.medium))
                 .foregroundStyle(Theme.Palette.textOnAccent)
                 .padding(.horizontal, Theme.Spacing.md)
                 .padding(.vertical, Theme.Spacing.sm)
-                .background(accent, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                .background(accent, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
             }
             .buttonStyle(.plain)
             .disabled(isRequesting)
@@ -125,7 +120,7 @@ struct BlockedPrompt: View {
 
     var body: some View {
         Text("\(moduleName) access is turned off. Enable it in System Settings › Privacy & Security.")
-            .font(Theme.Font.cardBody)
+            .font(Theme.Font.body)
             .foregroundStyle(Theme.Palette.textSecondary)
     }
 }
@@ -135,7 +130,7 @@ struct EmptyStateLine: View {
     let text: String
     var body: some View {
         Text(text)
-            .font(Theme.Font.cardBody)
+            .font(Theme.Font.body)
             .foregroundStyle(Theme.Palette.textSecondary)
     }
 }
@@ -150,7 +145,7 @@ struct LimitedAccessHint: View {
         HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: "exclamationmark.triangle")
             Text("\(moduleName) access is limited to selected items.")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
             Button("Grant Full Access…") {
                 // macOS opens the exact Privacy pane; iOS can only open Settings.
                 #if os(macOS)
@@ -168,7 +163,7 @@ struct LimitedAccessHint: View {
             #else
             .buttonStyle(.plain)
             #endif
-            .font(Theme.Font.cardCaption)
+            .font(Theme.Font.label)
             Spacer(minLength: 0)
         }
         .foregroundStyle(Theme.Palette.warning)

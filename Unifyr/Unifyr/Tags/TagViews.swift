@@ -122,10 +122,10 @@ struct TagManagerView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Tags")
-                .font(Theme.Font.cardTitle)
+                .font(Theme.Font.bodyStrong)
                 .padding(Theme.Spacing.lg)
             Text("One tag vocabulary across Notes, Reminders, Calendar, Contacts, and Messages. Tags sync with iCloud (and to iOS later). Files use Finder tags instead — those are visible in Apple's apps.")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, Theme.Spacing.lg)
@@ -163,7 +163,7 @@ struct TagManagerView: View {
             .padding(Theme.Spacing.lg)
         }
         .frame(width: 440, height: 420)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
     }
 
     private func linkCount(_ tag: HVTag) -> Int {
@@ -210,10 +210,10 @@ private struct TagEditorRow: View {
                 .frame(width: 28)
             TextField("Name", text: $tag.name)
                 .textFieldStyle(.plain)
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
             Spacer()
             Text("\(linkCount) item\(linkCount == 1 ? "" : "s")")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
             Button {
                 onDelete()

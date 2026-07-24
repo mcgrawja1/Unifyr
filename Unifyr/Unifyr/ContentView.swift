@@ -311,11 +311,11 @@ private struct ComingSoonView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(Theme.Palette.textSecondary)
             Text("\(item.title) is coming soon.")
-                .font(Theme.Font.cardTitle)
+                .font(Theme.Font.bodyStrong)
                 .foregroundStyle(Theme.Palette.textPrimary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .navigationTitle(item.title)
     }
 }

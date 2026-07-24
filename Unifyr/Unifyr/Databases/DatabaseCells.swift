@@ -243,7 +243,7 @@ private struct SelectCell: View {
 
             if options.isEmpty {
                 Text("No options yet.")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .padding(Theme.Spacing.md)
             } else {
@@ -323,7 +323,7 @@ struct OptionChip: View {
 
     var body: some View {
         Text(option.name)
-            .font(Theme.Font.cardCaption)
+            .font(Theme.Font.label)
             .lineLimit(1)
             .padding(.horizontal, Theme.Spacing.sm)
             .padding(.vertical, Theme.Spacing.xxs)
@@ -444,12 +444,12 @@ private struct RelationPicker: View {
 
             if targetDatabaseID == nil {
                 Text("This relation has no target database.")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .padding(Theme.Spacing.md)
             } else if targetRows.isEmpty {
                 Text("No rows.")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                     .padding(Theme.Spacing.md)
             } else {

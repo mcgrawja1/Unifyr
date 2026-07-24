@@ -108,7 +108,7 @@ struct PinnedNotesCard: View {
                             HStack(spacing: Theme.Spacing.sm) {
                                 Text(note.emoji ?? "📝")
                                 Text(note.title.isEmpty ? "Untitled" : note.title)
-                                    .font(Theme.Font.cardBody)
+                                    .font(Theme.Font.body)
                                     .foregroundStyle(Theme.Palette.textPrimary)
                                     .lineLimit(1)
                                 Spacer(minLength: 0)
@@ -189,12 +189,12 @@ private struct PinnedDatabaseCard: View {
                         } label: {
                             HStack(spacing: Theme.Spacing.sm) {
                                 Text(store.rowTitle(row.id, titleProperty: title))
-                                    .font(Theme.Font.cardBody)
+                                    .font(Theme.Font.body)
                                     .lineLimit(1)
                                 Spacer()
                                 if let secondary {
                                     Text(store.displayText(values[row.id]?[secondary.id] ?? DBCellValue(), property: secondary))
-                                        .font(Theme.Font.cardCaption)
+                                        .font(Theme.Font.label)
                                         .foregroundStyle(Theme.Palette.textSecondary)
                                         .lineLimit(1)
                                 }
@@ -207,7 +207,7 @@ private struct PinnedDatabaseCard: View {
                 },
                 accessory: {
                     Text("\(visible.count)")
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                 }
             )
@@ -290,14 +290,14 @@ struct PinnedRemindersCard: View {
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(reminder.title)
-                        .font(Theme.Font.cardBody)
+                        .font(Theme.Font.body)
                         .strikethrough(reminder.isCompleted)
                         .foregroundStyle(reminder.isCompleted ? Theme.Palette.textSecondary : Theme.Palette.textPrimary)
                         .lineLimit(1)
                     if let due = reminder.dueDate {
                         // Due date on its own row, indented (per spec).
                         Text(due.formatted(date: .abbreviated, time: .shortened))
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(
                                 !reminder.isCompleted && due < Date()
                                     ? Theme.Palette.danger

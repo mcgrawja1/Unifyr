@@ -167,14 +167,6 @@ enum Theme {
         /// and success states, not iMessage semantics).
         static let smsGreen = Color(hex: 0x34C759)
 
-        // MARK: Legacy aliases (Serene names still used across modules;
-        // retire during Phase 5 cleanup — do not add new call sites).
-
-        /// Old "app background". Panes stay white; the window wash is
-        /// `windowBackground`.
-        static let background = pane
-        static let surface = pane
-        static let surfaceRaised = hover
     }
 
     // MARK: - Typography
@@ -212,12 +204,7 @@ enum Theme {
 
         /// Monospace — briefing action-items block, code.
         static let mono = SwiftUI.Font.system(.body, design: .monospaced)
-
-        // MARK: Legacy aliases (retire in Phase 5).
-        static let dashboardTitle = display
-        static let cardTitle = bodyStrong
-        static let cardBody = body
-        static let cardCaption = label
+        /// Large stat numbers on dashboard cards.
         static let metricNumber = SwiftUI.Font.system(.title, design: .default).weight(.semibold)
     }
 
@@ -244,10 +231,6 @@ enum Theme {
         /// Panes (the floating white cards) and the active rail tile.
         static let lg: CGFloat = 8
         static let pill: CGFloat = 999
-
-        // Legacy aliases (retire in Phase 5).
-        static let card: CGFloat = lg
-        static let control: CGFloat = md
     }
 
     // MARK: - Fixed chrome metrics (Outlook shell geometry)
@@ -279,9 +262,6 @@ enum Theme {
         static let popover = (color: Color.black.opacity(0.14), radius: CGFloat(16), y: CGFloat(4))
         /// Barely-raised chrome (the selected segment pill).
         static let raised = (color: Color.black.opacity(0.10), radius: CGFloat(2), y: CGFloat(1))
-        /// Legacy card shadow — Fluent panes are flat; kept for old call
-        /// sites, now renders nothing (retire in Phase 5).
-        static let card = (color: Color.clear, radius: CGFloat(0), y: CGFloat(0))
     }
 
     // MARK: - Motion (100ms hover, 150ms surfaces; nothing over 200ms.

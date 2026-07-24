@@ -44,7 +44,7 @@ struct RemindersView: View {
                 content
             }
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .navigationTitle("Reminders")
         .task {
             await start()
@@ -162,7 +162,7 @@ struct RemindersView: View {
                 .padding(Theme.Spacing.lg)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(isCompact ? Theme.Palette.background : Theme.Palette.windowBackground)
+            .background(isCompact ? Theme.Palette.pane : Theme.Palette.windowBackground)
 
             // Mac/iPad: the editor is a side panel. iPhone: it's a sheet
             // (a 300pt panel next to the columns won't fit a phone).
@@ -397,12 +397,12 @@ private struct ReminderListColumn: View {
             HStack(spacing: Theme.Spacing.xs) {
                 Circle().fill(listColor).frame(width: 10, height: 10)
                 Text(list.title)
-                    .font(Theme.Font.cardTitle)
+                    .font(Theme.Font.bodyStrong)
                     .foregroundStyle(listColor)
                     .lineLimit(1)
                 Spacer()
                 Text("\(reminders.filter { !$0.isCompleted }.count)")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                 Menu {
                     Button { setSort("due") } label: {
@@ -443,7 +443,7 @@ private struct ReminderListColumn: View {
                     }
                     if sorted.isEmpty {
                         Text("No reminders")
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.textSecondary)
                             .padding(.vertical, Theme.Spacing.sm)
                     }
@@ -456,14 +456,14 @@ private struct ReminderListColumn: View {
                     .foregroundStyle(Theme.Palette.textSecondary)
                 TextField("New Reminder", text: $newTitle)
                     .textFieldStyle(.plain)
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .onSubmit {
                         onAdd(newTitle)
                         newTitle = ""
                     }
             }
             .padding(Theme.Spacing.sm)
-            .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+            .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
         }
         .padding(Theme.Spacing.md)
         .frame(width: 280)
@@ -501,11 +501,11 @@ private struct ReminderColumnRow: View {
                 HStack(spacing: 2) {
                     if reminder.priority > 0 {
                         Text(String(repeating: "!", count: priorityBangs))
-                            .font(Theme.Font.cardBody.weight(.semibold))
+                            .font(Theme.Font.body.weight(.semibold))
                             .foregroundStyle(accent)
                     }
                     Text(reminder.title)
-                        .font(Theme.Font.cardBody)
+                        .font(Theme.Font.body)
                         .strikethrough(reminder.isCompleted)
                         .foregroundStyle(reminder.isCompleted ? Theme.Palette.textSecondary : Theme.Palette.textPrimary)
                         .lineLimit(2)
@@ -513,12 +513,12 @@ private struct ReminderColumnRow: View {
                 }
                 if let due = reminder.dueDate {
                     Text(due.formatted(date: .abbreviated, time: .shortened))
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(!reminder.isCompleted && due < Date() ? Theme.Palette.danger : Theme.Palette.textSecondary)
                 }
                 if let notes = reminder.notes, !notes.isEmpty {
                     Text(notes)
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                         .lineLimit(1)
                 }
@@ -529,7 +529,7 @@ private struct ReminderColumnRow: View {
         .padding(.horizontal, Theme.Spacing.xs)
         .background(
             isSelected ? accent.opacity(0.14) : .clear,
-            in: RoundedRectangle(cornerRadius: Theme.Radius.control)
+            in: RoundedRectangle(cornerRadius: Theme.Radius.md)
         )
         .contentShape(Rectangle())
     }
@@ -603,7 +603,7 @@ private struct ReminderDetailPanel: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text("Details")
-                    .font(Theme.Font.cardTitle)
+                    .font(Theme.Font.bodyStrong)
                     .foregroundStyle(Theme.Palette.textPrimary)
                 Spacer()
                 Button(action: onClose) {
@@ -631,11 +631,11 @@ private struct ReminderDetailPanel: View {
                     VStack(alignment: .leading, spacing: 4) {
                         fieldLabel("Notes")
                         TextEditor(text: $draft.notes)
-                            .font(Theme.Font.cardBody)
+                            .font(Theme.Font.body)
                             .frame(minHeight: 70)
                             .scrollContentBackground(.hidden)
                             .padding(4)
-                            .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                            .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
@@ -688,7 +688,7 @@ private struct ReminderDetailPanel: View {
                             .labelsHidden()
                             .pickerStyle(.segmented)
                             Text("The address is looked up when you save.")
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                         }
                     }
@@ -712,7 +712,7 @@ private struct ReminderDetailPanel: View {
             }
             .padding(Theme.Spacing.md)
         }
-        .background(Theme.Palette.surface)
+        .background(Theme.Palette.pane)
         .confirmationDialog("Delete this reminder?", isPresented: $confirmingDelete) {
             Button("Delete", role: .destructive) { onDelete() }
         }
@@ -720,7 +720,7 @@ private struct ReminderDetailPanel: View {
 
     private func fieldLabel(_ text: String) -> some View {
         Text(text.uppercased())
-            .font(Theme.Font.cardCaption.weight(.semibold))
+            .font(Theme.Font.label.weight(.semibold))
             .foregroundStyle(Theme.Palette.textSecondary)
     }
 }

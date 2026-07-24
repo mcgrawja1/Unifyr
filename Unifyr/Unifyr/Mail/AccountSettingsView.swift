@@ -83,7 +83,7 @@ struct AccountSettingsView: View {
             serverRow("IMAP", host: $account.imapHost, port: $account.imapPort)
             serverRow("SMTP", host: $account.smtpHost, port: $account.smtpPort)
             Text("If your domain's mail is hosted by iCloud, these are imap.mail.me.com and smtp.mail.me.com — not imap.\(domainFallback). For Google, imap.gmail.com and smtp.gmail.com.")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
         }
     }
@@ -94,7 +94,7 @@ struct AccountSettingsView: View {
             SecureField("Leave blank to keep the current one", text: $newPassword)
                 .textFieldStyle(.roundedBorder)
             Text("Stored in iCloud Keychain, so changing it here updates your other devices too.")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
         }
     }
@@ -113,7 +113,7 @@ struct AccountSettingsView: View {
                     }
                 // Live preview of the badge as it appears in unified boxes.
                 Text(account.badgeLabel.isEmpty ? domainFallback : account.badgeLabel)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(badgeColor)
                     .padding(.horizontal, Theme.Spacing.sm)
                     .padding(.vertical, Theme.Spacing.xxs)
@@ -121,7 +121,7 @@ struct AccountSettingsView: View {
                 Spacer()
             }
             Text("Shown on this account's messages in the unified mailboxes, and as its name in the sidebar.")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
         }
     }
@@ -130,13 +130,13 @@ struct AccountSettingsView: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             sectionLabel("Signature")
             TextEditor(text: $account.signature)
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .scrollContentBackground(.hidden)
                 .padding(Theme.Spacing.sm)
-                .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
                 .frame(minHeight: 90)
             Text("Appended to messages sent from this account. Leave empty for none.")
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
         }
     }
@@ -150,7 +150,7 @@ struct AccountSettingsView: View {
     private func serverRow(_ label: String, host: Binding<String>, port: Binding<Int>) -> some View {
         HStack(spacing: Theme.Spacing.sm) {
             Text(label)
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .frame(width: 44, alignment: .leading)
             TextField("host", text: host)
                 .textFieldStyle(.roundedBorder)

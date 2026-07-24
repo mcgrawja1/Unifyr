@@ -89,11 +89,11 @@ private struct EventRow: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.sm) {
             Text(timeLabel)
-                .font(Theme.Font.cardCaption.monospacedDigit())
+                .font(Theme.Font.label.monospacedDigit())
                 .foregroundStyle(Theme.Palette.textSecondary)
                 .frame(width: 64, alignment: .leading)
             Text(event.title)
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
                 .foregroundStyle(Theme.Palette.textPrimary)
                 .lineLimit(1)
             Spacer(minLength: 0)

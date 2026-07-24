@@ -76,7 +76,7 @@ struct VersionHistorySheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Version History")
-                .font(Theme.Font.cardTitle)
+                .font(Theme.Font.bodyStrong)
                 .padding(Theme.Spacing.lg)
 
             Divider().overlay(Theme.Palette.separator)
@@ -89,9 +89,9 @@ struct VersionHistorySheet: View {
                     HStack(spacing: Theme.Spacing.md) {
                         VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                             Text(version.date.formatted(date: .abbreviated, time: .shortened))
-                                .font(Theme.Font.cardBody)
+                                .font(Theme.Font.body)
                             Text(preview(version.url))
-                                .font(Theme.Font.cardCaption)
+                                .font(Theme.Font.label)
                                 .foregroundStyle(Theme.Palette.textSecondary)
                                 .lineLimit(2)
                         }
@@ -107,7 +107,7 @@ struct VersionHistorySheet: View {
             Divider().overlay(Theme.Palette.separator)
             HStack {
                 Text("Versions are stored on this device only.")
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.textSecondary)
                 Spacer()
                 Button("Done") { dismiss() }
@@ -116,7 +116,7 @@ struct VersionHistorySheet: View {
             .padding(Theme.Spacing.lg)
         }
         .frame(minWidth: 460, minHeight: 380)
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .onAppear { versions = PageVersions.list(docID: note.id) }
     }
 

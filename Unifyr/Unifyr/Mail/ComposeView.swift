@@ -166,7 +166,7 @@ struct ComposeView: View {
                 if accounts.count > 1 {
                     HStack(spacing: Theme.Spacing.sm) {
                         Text("From")
-                            .font(Theme.Font.cardCaption)
+                            .font(Theme.Font.label)
                             .foregroundStyle(Theme.Palette.textSecondary)
                             .frame(width: 56, alignment: .leading)
                         Picker("", selection: $fromAccountID) {
@@ -191,7 +191,7 @@ struct ComposeView: View {
                 composeField("Subject", text: $subject, prompt: "Subject")
                 Divider().overlay(Theme.Palette.separator)
                 TextEditor(text: $messageBody)
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .scrollContentBackground(.hidden)
                     .padding(Theme.Spacing.sm)
 
@@ -203,10 +203,10 @@ struct ComposeView: View {
                                     Image(systemName: "paperclip")
                                         .foregroundStyle(Theme.Palette.primary)
                                     Text(attachment.filename)
-                                        .font(Theme.Font.cardCaption)
+                                        .font(Theme.Font.label)
                                         .lineLimit(1)
                                     Text(ByteCountFormatter.string(fromByteCount: Int64(attachment.data.count), countStyle: .file))
-                                        .font(Theme.Font.cardCaption)
+                                        .font(Theme.Font.label)
                                         .foregroundStyle(Theme.Palette.textSecondary)
                                     Button {
                                         attachments.removeAll { $0 == attachment }
@@ -218,7 +218,7 @@ struct ComposeView: View {
                                 }
                                 .padding(.horizontal, Theme.Spacing.sm)
                                 .padding(.vertical, Theme.Spacing.xs)
-                                .background(Theme.Palette.surfaceRaised, in: RoundedRectangle(cornerRadius: Theme.Radius.control))
+                                .background(Theme.Palette.hover, in: RoundedRectangle(cornerRadius: Theme.Radius.md))
                             }
                         }
                         .padding(.horizontal, Theme.Spacing.lg)
@@ -229,7 +229,7 @@ struct ComposeView: View {
 
             if let errorText {
                 Text(errorText)
-                    .font(Theme.Font.cardCaption)
+                    .font(Theme.Font.label)
                     .foregroundStyle(Theme.Palette.danger)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, Theme.Spacing.lg)
@@ -245,12 +245,12 @@ struct ComposeView: View {
     private func composeField(_ label: String, text: Binding<String>, prompt: String) -> some View {
         HStack(spacing: Theme.Spacing.sm) {
             Text(label)
-                .font(Theme.Font.cardCaption)
+                .font(Theme.Font.label)
                 .foregroundStyle(Theme.Palette.textSecondary)
                 .frame(width: 56, alignment: .leading)
             TextField(prompt, text: text)
                 .textFieldStyle(.plain)
-                .font(Theme.Font.cardBody)
+                .font(Theme.Font.body)
         }
         .padding(.horizontal, Theme.Spacing.lg)
         .padding(.vertical, Theme.Spacing.sm)

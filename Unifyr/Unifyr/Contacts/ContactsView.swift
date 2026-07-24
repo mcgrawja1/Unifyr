@@ -76,7 +76,7 @@ struct ContactsView: View {
                 }
             }
         }
-        .background(Theme.Palette.background)
+        .background(Theme.Palette.pane)
         .navigationTitle("Contacts")
         .task { await start() }
         .sheet(item: $editing) { contact in
@@ -196,7 +196,7 @@ struct ContactsView: View {
             .scrollContentBackground(.hidden)
             .tint(Theme.Palette.primary)
         }
-        .background(isCompact ? Theme.Palette.surface : Theme.Palette.navPane)
+        .background(isCompact ? Theme.Palette.pane : Theme.Palette.navPane)
     }
 
     private func groupRow(_ groupID: String?, label: String, systemImage: String) -> some View {
@@ -407,12 +407,12 @@ private struct ContactRow: View {
             Avatar(contact: contact)
             VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(contact.displayName)
-                    .font(Theme.Font.cardBody)
+                    .font(Theme.Font.body)
                     .foregroundStyle(Theme.Palette.textPrimary)
                     .lineLimit(1)
                 if let subtitle {
                     Text(subtitle)
-                        .font(Theme.Font.cardCaption)
+                        .font(Theme.Font.label)
                         .foregroundStyle(Theme.Palette.textSecondary)
                         .lineLimit(1)
                 }

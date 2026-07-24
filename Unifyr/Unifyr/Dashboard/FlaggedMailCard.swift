@@ -48,11 +48,11 @@ struct FlaggedMailCard: View {
                                 .foregroundStyle(Theme.Palette.warning)
                             VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                                 Text(item.subject)
-                                    .font(Theme.Font.cardBody)
+                                    .font(Theme.Font.body)
                                     .foregroundStyle(Theme.Palette.textPrimary)
                                     .lineLimit(1)
                                 Text("\(item.from) · \(item.date.formatted(date: .abbreviated, time: .omitted))")
-                                    .font(Theme.Font.cardCaption)
+                                    .font(Theme.Font.label)
                                     .foregroundStyle(Theme.Palette.textSecondary)
                                     .lineLimit(1)
                             }
