@@ -145,6 +145,14 @@ nonisolated enum MCPToolRegistry {
                 "parent": MCPTool.prop("string", "Destination parent page — its title or UUID (empty = top level)"),
             ], required: ["id"])
         ),
+        MCPTool(
+            name: "notes_rename",
+            description: "Rename a page or a database by id (databases are pages with kind=database, so this covers both).",
+            schema: MCPTool.object([
+                "id": MCPTool.prop("string", "Page or database UUID"),
+                "title": MCPTool.prop("string", "New title"),
+            ], required: ["id", "title"])
+        ),
 
         // MARK: Databases (DatabaseStore — Notion-style tables)
         MCPTool(
@@ -183,6 +191,34 @@ nonisolated enum MCPToolRegistry {
             schema: MCPTool.object([
                 "row_id": MCPTool.prop("string", "Row UUID from db_query"),
             ], required: ["row_id"])
+        ),
+        MCPTool(
+            name: "db_create",
+            description: "Create a brand-new database (Notion-style table). A title column named 'Name' is always created; 'properties' adds more columns — kinds: text, number, select, multiSelect, date, checkbox, url. Select kinds take an optional 'options' string array. Created with no rows — fill it with db_add_row. Optionally nest under a parent page.",
+            schema: MCPTool.object([
+                "title": MCPTool.prop("string", "Database name"),
+                "parent": MCPTool.prop("string", "Optional parent page — its title or UUID (omit for top level)"),
+                "properties": MCPTool.prop("array", "Optional extra columns, e.g. [{\"name\":\"Arrived\",\"kind\":\"checkbox\"},{\"name\":\"Carrier\",\"kind\":\"select\",\"options\":[\"UPS\",\"FedEx\",\"USPS\"]}]"),
+            ], required: ["title"])
+        ),
+        MCPTool(
+            name: "db_add_property",
+            description: "Add a column to an existing database. Kinds: text, number, select, multiSelect, date, checkbox, url. Select kinds take an optional 'options' string array.",
+            schema: MCPTool.object([
+                "database": MCPTool.prop("string", "Database title or UUID"),
+                "name": MCPTool.prop("string", "Column name"),
+                "kind": MCPTool.prop("string", "Column kind"),
+                "options": MCPTool.prop("array", "Option names for select/multiSelect"),
+            ], required: ["database", "name", "kind"])
+        ),
+        MCPTool(
+            name: "db_pin_dashboard",
+            description: "Pin a database to the Unifyr Dashboard as a live card (or unpin with pinned=false). Optionally pin a specific saved view of it.",
+            schema: MCPTool.object([
+                "database": MCPTool.prop("string", "Database title or UUID"),
+                "pinned": MCPTool.prop("boolean", "true to pin (default), false to unpin"),
+                "view": MCPTool.prop("string", "Optional saved view name or UUID"),
+            ], required: ["database"])
         ),
 
         // MARK: Calendar (EventKitBroker)

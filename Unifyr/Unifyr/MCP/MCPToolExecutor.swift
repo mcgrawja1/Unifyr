@@ -78,6 +78,8 @@ final class MCPToolExecutor {
         case "notes_archive": return try notesSetArchived(id: try requireUUID(args, "id"), archived: true)
         case "notes_restore": return try notesSetArchived(id: try requireUUID(args, "id"), archived: false)
         case "notes_delete": return try notesDelete(id: try requireUUID(args, "id"))
+        case "notes_rename":
+            return try notesRename(id: try requireUUID(args, "id"), title: try require(args, "title"))
         case "notes_move":
             // "folder" accepted as a legacy alias (older cached tool schemas).
             return try notesMove(id: try requireUUID(args, "id"), parentRef: str(args, "parent") ?? str(args, "folder"))
@@ -97,6 +99,25 @@ final class MCPToolExecutor {
             return try dbUpdateRow(rowID: try requireUUID(args, "row_id"), values: values)
         case "db_delete_row":
             return try dbDeleteRow(rowID: try requireUUID(args, "row_id"))
+        case "db_create":
+            return try dbCreate(
+                title: try require(args, "title"),
+                parentRef: str(args, "parent"),
+                specs: args["properties"] as? [[String: Any]]
+            )
+        case "db_add_property":
+            return try dbAddProperty(
+                databaseRef: try require(args, "database"),
+                name: try require(args, "name"),
+                kindRaw: try require(args, "kind"),
+                options: args["options"] as? [String]
+            )
+        case "db_pin_dashboard":
+            return try dbPinDashboard(
+                databaseRef: try require(args, "database"),
+                pinned: (args["pinned"] as? Bool) ?? true,
+                viewRef: str(args, "view")
+            )
 
         case "calendar_today":
             return try encode(try await brokers.eventKit.fetchTodayEvents())
@@ -621,6 +642,117 @@ final class MCPToolExecutor {
             applied.append(property.name)
         }
         return applied
+    }
+
+    /// Rename a page or database (a database IS a Note with kind .database).
+    private func notesRename(id: UUID, title: String) throws -> String {
+        guard let note = try allNotes().first(where: { $0.id == id }) else { throw MCPError("Note not found") }
+        let previous = note.title
+        note.title = title
+        note.modifiedAt = Date()
+        try notesContext.save()
+        return try json(["renamed": true, "from": previous, "to": title])
+    }
+
+    /// Option chip colors for MCP-created selects — the app's data palette.
+    private static let optionPalette = [
+        "#7F838C", "#F2A65A", "#3E8EF7", "#B0619B", "#8B7CF6", "#5AB8D4", "#E5624D",
+    ]
+
+    private func propertyKind(_ raw: String) throws -> DBPropertyKind {
+        let normalized = raw.replacingOccurrences(of: "_", with: "").lowercased()
+        if let kind = DBPropertyKind.allCases.first(where: { $0.rawValue.lowercased() == normalized }) {
+            // person/relation/rollup need in-app context (contacts, target
+            // databases) — keep MCP creation to the self-contained kinds.
+            guard ![.person, .relation, .rollup].contains(kind) else {
+                throw MCPError("Column kind “\(raw)” can't be created over MCP — make it in the app.")
+            }
+            return kind
+        }
+        throw MCPError("Unknown column kind “\(raw)”. Use: text, number, select, multiSelect, date, checkbox, url.")
+    }
+
+    private func selectConfig(options: [String]?) -> DBPropertyConfig {
+        guard let options, !options.isEmpty else { return DBPropertyConfig() }
+        return DBPropertyConfig(options: options.enumerated().map { index, name in
+            DBSelectOption(name: name, colorHex: Self.optionPalette[index % Self.optionPalette.count])
+        })
+    }
+
+    /// Create a new database: a Note with kind .database, a title column, and
+    /// any requested extra columns. No seed rows — MCP fills it via db_add_row.
+    private func dbCreate(title: String, parentRef: String?, specs: [[String: Any]]?) throws -> String {
+        let store = NotesStore(context: notesContext)
+        let parent: Note?
+        if let parentRef, !parentRef.isEmpty {
+            let resolved = try resolvePage(parentRef)
+            guard resolved.kind == .page else {
+                throw MCPError("“\(resolved.title)” is a database — databases can only nest under pages.")
+            }
+            parent = resolved
+        } else {
+            parent = nil
+        }
+
+        let note = store.createPage(title: title, parent: parent)
+        note.kind = .database
+
+        _ = dbStore.addProperty(to: note, kind: .text, name: "Name", config: DBPropertyConfig(isTitle: true))
+        var columns = ["Name (title)"]
+        for spec in specs ?? [] {
+            guard let name = spec["name"] as? String, let kindRaw = spec["kind"] as? String else {
+                throw MCPError("Each property needs 'name' and 'kind'.")
+            }
+            let kind = try propertyKind(kindRaw)
+            let config = kind == .select || kind == .multiSelect
+                ? selectConfig(options: spec["options"] as? [String])
+                : DBPropertyConfig()
+            _ = dbStore.addProperty(to: note, kind: kind, name: name, config: config)
+            columns.append("\(name) (\(kind.rawValue))")
+        }
+        try notesContext.save()
+        return try json([
+            "created": true,
+            "id": note.id.uuidString,
+            "columns": columns,
+            "parent": parent?.title ?? "Top Level",
+        ])
+    }
+
+    private func dbAddProperty(databaseRef: String, name: String, kindRaw: String, options: [String]?) throws -> String {
+        let note = try resolveDatabase(databaseRef)
+        let kind = try propertyKind(kindRaw)
+        let config = kind == .select || kind == .multiSelect
+            ? selectConfig(options: options)
+            : DBPropertyConfig()
+        _ = dbStore.addProperty(to: note, kind: kind, name: name, config: config)
+        try notesContext.save()
+        return try json(["added": true, "database": note.title, "column": name, "kind": kind.rawValue])
+    }
+
+    /// Pin (or unpin) a database — optionally one of its saved views — as a
+    /// live Dashboard card, exactly like the in-app "Pin to Dashboard".
+    private func dbPinDashboard(databaseRef: String, pinned: Bool, viewRef: String?) throws -> String {
+        let note = try resolveDatabase(databaseRef)
+        var viewID: UUID?
+        if let viewRef, !viewRef.isEmpty {
+            let views = dbStore.views(of: note)
+            guard let view = views.first(where: {
+                $0.id.uuidString.caseInsensitiveCompare(viewRef) == .orderedSame
+                    || $0.name.localizedCaseInsensitiveCompare(viewRef) == .orderedSame
+            }) else {
+                let names = views.map(\.name).joined(separator: ", ")
+                throw MCPError("No saved view “\(viewRef)” on “\(note.title)”. Views: \(names.isEmpty ? "(none)" : names)")
+            }
+            viewID = view.id
+        }
+        if PinStore.isPinned(databaseView: note.id, viewID: viewID) != pinned {
+            PinStore.toggle(databaseView: note.id, viewID: viewID)
+        }
+        return try json([
+            "database": note.title.isEmpty ? "Untitled" : note.title,
+            "pinned": pinned,
+        ])
     }
 
     private func dbAddRow(databaseRef: String, values: [String: Any]) throws -> String {
