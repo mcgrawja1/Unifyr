@@ -266,6 +266,8 @@ enum Theme {
     enum Shadow {
         /// Popover / menu / quick-create-card elevation.
         static let popover = (color: Color.black.opacity(0.14), radius: CGFloat(16), y: CGFloat(4))
+        /// Barely-raised chrome (the selected segment pill).
+        static let raised = (color: Color.black.opacity(0.10), radius: CGFloat(2), y: CGFloat(1))
         /// Legacy card shadow — Fluent panes are flat; kept for old call
         /// sites, now renders nothing (retire in Phase 5).
         static let card = (color: Color.clear, radius: CGFloat(0), y: CGFloat(0))
