@@ -120,38 +120,51 @@ struct CalendarView: View {
     // MARK: Layout
 
     private var content: some View {
-        HStack(spacing: 0) {
-            // iPhone has no room for a 190pt calendar list beside the grid —
-            // it's reachable from the toolbar's sidebar button as a sheet.
-            if !sidebarCollapsed && !isCompact {
-                sidebar
-                    .frame(width: 190)
-                Divider().overlay(Theme.Palette.separator)
-            }
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
+            // The command bar spans nav pane + grid (regular widths).
+            if !isCompact {
                 header
-                Divider().overlay(Theme.Palette.separator)
-                switch mode {
-                case .month:
-                    MonthGridView(
-                        anchor: anchor,
-                        events: visibleEvents,
-                        onOpenDay: { day in
-                            anchor = day
-                            modeRaw = CalendarViewMode.day.rawValue
-                            Task { await load() }
-                        },
-                        onNewEvent: { day in composer = ComposerTarget(start: day, precise: false) },
-                        onEditEvent: { editingEvent = $0 },
-                        onDuplicateEvent: { event in Task { await duplicate(event) } },
-                        onDeleteEvent: { event in Task { await delete(event) } }
-                    )
-                case .week:
-                    timeGrid(days: weekDays)
-                case .day:
-                    timeGrid(days: [calendar.startOfDay(for: anchor)])
+            }
+            HStack(spacing: 0) {
+                // iPhone has no room for a calendar list beside the grid —
+                // it's reachable from the toolbar's sidebar button as a sheet.
+                if !sidebarCollapsed && !isCompact {
+                    sidebar
+                        .frame(width: Theme.Metrics.navPaneWidth)
+                    Divider().overlay(Theme.Palette.separator)
+                }
+                VStack(spacing: 0) {
+                    if isCompact {
+                        header
+                        Divider().overlay(Theme.Palette.separator)
+                    }
+                    gridContent
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private var gridContent: some View {
+        switch mode {
+        case .month:
+            MonthGridView(
+                anchor: anchor,
+                events: visibleEvents,
+                onOpenDay: { day in
+                    anchor = day
+                    modeRaw = CalendarViewMode.day.rawValue
+                    Task { await load() }
+                },
+                onNewEvent: { day in composer = ComposerTarget(start: day, precise: false) },
+                onEditEvent: { editingEvent = $0 },
+                onDuplicateEvent: { event in Task { await duplicate(event) } },
+                onDeleteEvent: { event in Task { await delete(event) } }
+            )
+        case .week:
+            timeGrid(days: weekDays)
+        case .day:
+            timeGrid(days: [calendar.startOfDay(for: anchor)])
         }
     }
 
@@ -204,10 +217,45 @@ struct CalendarView: View {
 
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("CALENDARS")
-                .font(Theme.Font.cardCaption.weight(.semibold))
-                .foregroundStyle(Theme.Palette.textSecondary)
-                .padding(Theme.Spacing.md)
+            // Outlook nav-pane header: hamburger + primary action (regular
+            // only; the sheet presentation on iPhone has its own nav bar).
+            if !isCompact {
+                HStack(spacing: Theme.Spacing.sm) {
+                    Button {
+                        withAnimation(Theme.Motion.surface) { sidebarCollapsed.toggle() }
+                    } label: {
+                        Image(systemName: "line.3.horizontal")
+                            .font(.system(size: Theme.Metrics.iconInline))
+                            .foregroundStyle(Theme.Palette.textSecondary)
+                            .frame(width: Theme.Metrics.controlHeight, height: Theme.Metrics.controlHeight)
+                            .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.sm))
+                    }
+                    .buttonStyle(.plain)
+                    .fluentHover()
+                    .help("Hide Calendars")
+                    Button {
+                        composer = ComposerTarget(start: calendar.startOfDay(for: anchor), precise: false)
+                    } label: {
+                        Label("New Event", systemImage: "plus")
+                    }
+                    .buttonStyle(.fluentPrimary)
+                    Spacer(minLength: 0)
+                }
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, Theme.Spacing.sm)
+
+                MiniMonthCalendar(anchor: anchor, highlightWeek: mode == .week) { day in
+                    anchor = day
+                    Task { await load() }
+                }
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.bottom, Theme.Spacing.md)
+            }
+            Text("Calendars")
+                .font(Theme.Font.bodyStrong)
+                .foregroundStyle(Theme.Palette.textPrimary)
+                .padding(.horizontal, Theme.Spacing.md)
+                .padding(.vertical, Theme.Spacing.sm)
             ScrollView {
                 VStack(alignment: .leading, spacing: 2) {
                     ForEach(calendars) { cal in
@@ -219,7 +267,7 @@ struct CalendarView: View {
             Spacer(minLength: 0)
         }
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(Theme.Palette.surface)
+        .background(isCompact ? Theme.Palette.surface : Theme.Palette.navPane)
     }
 
     private func calendarToggle(_ cal: CalendarSnapshot) -> some View {
@@ -292,29 +340,57 @@ struct CalendarView: View {
             }
             .padding(Theme.Spacing.sm)
         } else {
-            HStack(spacing: Theme.Spacing.md) {
+            // Outlook command bar: Today · ‹ › · date range | view mode ·
+            // calendars toggle. (New Event lives in the nav pane.)
+            CommandBar {
                 Button {
-                    withAnimation(.easeInOut(duration: 0.15)) { sidebarCollapsed.toggle() }
+                    anchor = Date()
+                    Task { await load() }
                 } label: {
-                    Image(systemName: "sidebar.left")
+                    Label("Today", systemImage: "calendar.badge.clock")
                 }
-                .help(sidebarCollapsed ? "Show Calendars" : "Hide Calendars")
+                .buttonStyle(.fluentToolbar)
+
+                Button { shift(-1) } label: {
+                    Label("Previous", systemImage: "chevron.left")
+                        .labelStyle(.iconOnly)
+                        .frame(width: Theme.Metrics.iconToolbar + Theme.Spacing.sm, height: Theme.Metrics.buttonHeight)
+                }
+                .buttonStyle(.fluentToolbar)
+                .help("Previous")
+
+                Button { shift(1) } label: {
+                    Label("Next", systemImage: "chevron.right")
+                        .labelStyle(.iconOnly)
+                        .frame(width: Theme.Metrics.iconToolbar + Theme.Spacing.sm, height: Theme.Metrics.buttonHeight)
+                }
+                .buttonStyle(.fluentToolbar)
+                .help("Next")
+
                 Text(headerTitle)
-                    .font(Theme.Font.dashboardTitle)
+                    .font(Theme.Font.title)
+                    .foregroundStyle(Theme.Palette.textPrimary)
                     .lineLimit(1)
-                Spacer()
-                modePicker
-                    .frame(width: 220)
-                navigationButtons
-                Button {
-                    composer = ComposerTarget(start: calendar.startOfDay(for: anchor), precise: false)
-                } label: {
-                    Label("New Event", systemImage: "plus")
+                    .padding(.leading, Theme.Spacing.sm)
+            } trailing: {
+                FluentSegmentedControl(
+                    selection: $modeRaw,
+                    options: CalendarViewMode.allCases.map { ($0.rawValue, $0.title) }
+                )
+                .onChange(of: modeRaw) { _, _ in Task { await load() } }
+
+                if sidebarCollapsed {
+                    Button {
+                        withAnimation(Theme.Motion.surface) { sidebarCollapsed.toggle() }
+                    } label: {
+                        Label("Calendars", systemImage: "sidebar.left")
+                            .labelStyle(.iconOnly)
+                            .frame(width: Theme.Metrics.iconToolbar + Theme.Spacing.sm, height: Theme.Metrics.buttonHeight)
+                    }
+                    .buttonStyle(.fluentToolbar)
+                    .help("Show Calendars")
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.primary)
             }
-            .padding(Theme.Spacing.md)
         }
     }
 
@@ -545,10 +621,10 @@ private struct MonthDayCell: View {
                     .foregroundStyle(
                         isToday
                             ? Theme.Palette.textOnAccent
-                            : (inMonth ? Theme.Palette.textPrimary : Theme.Palette.textSecondary.opacity(0.55))
+                            : (inMonth ? Theme.Palette.textPrimary : Theme.Palette.textTertiary)
                     )
                     .frame(minWidth: 20, minHeight: 20)
-                    .background(isToday ? Theme.Palette.danger : Color.clear, in: Circle())
+                    .background(isToday ? Theme.Palette.primaryFill : Color.clear, in: Circle())
             }
             .padding(.horizontal, 4)
             .padding(.top, 3)
@@ -820,15 +896,15 @@ private struct TimeGridView: View {
                         )
                 }
 
-                // Now line
+                // Now line (brand blue with a leading dot, per Fluent)
                 if calendar.isDate(now, inSameDayAs: day) {
                     let y = yOffset(of: now, in: day)
                     Rectangle()
-                        .fill(Theme.Palette.danger)
+                        .fill(Theme.Palette.indicatorNow)
                         .frame(height: 1.5)
                         .offset(y: y)
                     Circle()
-                        .fill(Theme.Palette.danger)
+                        .fill(Theme.Palette.indicatorNow)
                         .frame(width: 7, height: 7)
                         .offset(x: -3, y: y - 2.75)
                 }
@@ -1086,17 +1162,60 @@ struct EventEditorView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-            HStack {
-                Text("Edit Event").font(Theme.Font.cardTitle)
-                Spacer()
-                Text(event.calendarTitle)
-                    .font(Theme.Font.cardCaption)
-                    .foregroundStyle(Theme.Palette.textSecondary)
+        RecordEditorChrome(title: title.isEmpty ? "Edit Event" : title, subtitle: event.calendarTitle) {
+            Button {
+                Task { await save() }
+            } label: {
+                if saving {
+                    Label {
+                        Text("Save")
+                    } icon: {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(width: Theme.Metrics.iconInline, height: Theme.Metrics.iconInline)
+                    }
+                } else {
+                    Label("Save", systemImage: "square.and.arrow.down")
+                }
             }
+            .buttonStyle(.fluentToolbar)
+            .keyboardShortcut(.defaultAction)
+            .disabled(title.isEmpty || saving)
 
-            TextField("Title", text: $title).textFieldStyle(.roundedBorder)
-            TextField("Location", text: $location).textFieldStyle(.roundedBorder)
+            Button { dismiss() } label: {
+                Label("Cancel", systemImage: "xmark")
+            }
+            .buttonStyle(.fluentToolbar)
+
+            Button { confirmingDelete = true } label: {
+                Label("Delete", systemImage: "trash")
+            }
+            .buttonStyle(.fluentToolbar)
+        } content: {
+            editorForm
+        }
+        .frame(maxWidth: isCompact ? .infinity : 420)
+        .task {
+            calendars = (try? await brokers.eventKit.eventCalendars()) ?? []
+            // A read-only calendar won't be in the writable list; keep the
+            // event where it is rather than showing a wrong selection.
+            if !calendars.contains(where: { $0.id == calendarID }) {
+                calendars.insert(
+                    CalendarSnapshot(id: event.calendarID, title: event.calendarTitle, colorHex: event.calendarColorHex),
+                    at: 0
+                )
+            }
+        }
+        .confirmationDialog("Delete “\(event.title)”?", isPresented: $confirmingDelete, titleVisibility: .visible) {
+            Button("Delete", role: .destructive) { Task { await delete() } }
+            Button("Cancel", role: .cancel) {}
+        }
+    }
+
+    private var editorForm: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+            FluentFormField(label: "Title", text: $title)
+            FluentFormField(label: "Location", text: $location, systemImage: "mappin.and.ellipse")
 
             Toggle("All-day", isOn: $isAllDay).platformCheckbox()
             DatePicker(
@@ -1120,9 +1239,9 @@ struct EventEditorView: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("NOTES")
-                    .font(Theme.Font.cardCaption.weight(.semibold))
-                    .foregroundStyle(Theme.Palette.textSecondary)
+                Text("Notes")
+                    .font(Theme.Font.subtitle)
+                    .foregroundStyle(Theme.Palette.textPrimary)
                 TextEditor(text: $notes)
                     .font(Theme.Font.cardBody)
                     .frame(minHeight: 60)
@@ -1136,49 +1255,8 @@ struct EventEditorView: View {
                     .font(Theme.Font.cardCaption)
                     .foregroundStyle(Theme.Palette.danger)
             }
-
-            HStack {
-                Button("Delete Event…", role: .destructive) { confirmingDelete = true }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Theme.Palette.danger)
-                Spacer()
-                Button("Cancel") { dismiss() }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Theme.Palette.textSecondary)
-                Button {
-                    Task { await save() }
-                } label: {
-                    HStack(spacing: Theme.Spacing.xs) {
-                        if saving { ProgressView().controlSize(.small) }
-                        Text("Save")
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.primary)
-                .keyboardShortcut(.defaultAction)
-                .disabled(title.isEmpty || saving)
-            }
         }
         .padding(Theme.Spacing.lg)
-        // A fixed width is right on a Mac and wrong on a phone, where 420pt is
-        // wider than the screen.
-        .frame(maxWidth: isCompact ? .infinity : 420)
-        .background(Theme.Palette.background)
-        .task {
-            calendars = (try? await brokers.eventKit.eventCalendars()) ?? []
-            // A read-only calendar won't be in the writable list; keep the
-            // event where it is rather than showing a wrong selection.
-            if !calendars.contains(where: { $0.id == calendarID }) {
-                calendars.insert(
-                    CalendarSnapshot(id: event.calendarID, title: event.calendarTitle, colorHex: event.calendarColorHex),
-                    at: 0
-                )
-            }
-        }
-        .confirmationDialog("Delete “\(event.title)”?", isPresented: $confirmingDelete, titleVisibility: .visible) {
-            Button("Delete", role: .destructive) { Task { await delete() } }
-            Button("Cancel", role: .cancel) {}
-        }
     }
 
     private func save() async {
@@ -1242,45 +1320,49 @@ struct EventComposerView: View {
         _start = State(initialValue: preciseStart ?? nineAM)
     }
 
+    /// The calendar the event will land in (drives the header, like Outlook's
+    /// quick-create shows the target calendar).
+    private var selectedCalendarTitle: String? {
+        calendars.first { $0.id == selectedCalendarID }?.title
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-            Text("New Event").font(Theme.Font.cardTitle)
-            TextField("Title", text: $title).textFieldStyle(.roundedBorder)
-            DatePicker("Starts", selection: $start)
-            Picker("Duration", selection: $durationMinutes) {
-                Text("30 minutes").tag(30)
-                Text("1 hour").tag(60)
-                Text("2 hours").tag(120)
-                Text("All day").tag(-1)
-            }
-            if !calendars.isEmpty {
-                Picker("Calendar", selection: $selectedCalendarID) {
-                    ForEach(calendars) { cal in
-                        Text(cal.title).tag(cal.id)
+        QuickCreateCard(
+            headerLine1: "New Event",
+            headerLine2: selectedCalendarTitle,
+            discardTitle: "Discard",
+            saveTitle: "Create",
+            saveDisabled: title.isEmpty || saving,
+            onDiscard: { dismiss() },
+            onSave: { Task { await save() } }
+        ) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+                FluentFormField(label: "", text: $title, prompt: "New Event", systemImage: "quote.opening")
+                DatePicker("Starts", selection: $start)
+                Picker("Duration", selection: $durationMinutes) {
+                    Text("30 minutes").tag(30)
+                    Text("1 hour").tag(60)
+                    Text("2 hours").tag(120)
+                    Text("All day").tag(-1)
+                }
+                if !calendars.isEmpty {
+                    Picker("Calendar", selection: $selectedCalendarID) {
+                        ForEach(calendars) { cal in
+                            Text(cal.title).tag(cal.id)
+                        }
                     }
                 }
-            }
-            HStack {
-                Button("Cancel") { dismiss() }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Theme.Palette.textSecondary)
-                Spacer()
-                Button {
-                    Task { await save() }
-                } label: {
+                if saving {
                     HStack(spacing: Theme.Spacing.xs) {
-                        if saving { ProgressView().controlSize(.small) }
-                        Text("Create")
+                        ProgressView().controlSize(.small)
+                        Text("Creating…")
+                            .font(Theme.Font.caption)
+                            .foregroundStyle(Theme.Palette.textSecondary)
                     }
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.Palette.primary)
-                .disabled(title.isEmpty || saving)
             }
         }
-        .padding(Theme.Spacing.lg)
         .frame(maxWidth: isCompact ? .infinity : 380)
-        .background(Theme.Palette.background)
         .task {
             calendars = (try? await brokers.eventKit.eventCalendars()) ?? []
             // Priority: the user-chosen default calendar, then the last one

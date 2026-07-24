@@ -502,6 +502,140 @@ struct RecordEditorChrome<Commands: View, Content: View>: View {
     }
 }
 
+// MARK: - Mini month calendar (nav-pane date picker)
+
+/// Outlook's nav-pane mini month: `‹ Month YYYY ›` header, single-letter
+/// weekday row, today as a filled brand circle, optional light-blue pill
+/// behind the selected day's week. Selecting a day calls `onSelect` —
+/// purely a navigation affordance over existing anchor-setting behavior.
+struct MiniMonthCalendar: View {
+    /// The externally-selected day (drives the week pill + initial month).
+    let anchor: Date
+    /// Highlight the anchor's whole week (week view) vs just the day.
+    var highlightWeek: Bool = false
+    let onSelect: (Date) -> Void
+
+    /// Local paging offset in months from the anchor's month (chevrons page
+    /// the mini view without moving the main calendar).
+    @State private var monthOffset = 0
+
+    private var calendar: Calendar { Calendar.current }
+
+    private var displayedMonth: Date {
+        calendar.date(byAdding: .month, value: monthOffset, to: anchor) ?? anchor
+    }
+
+    private var weeks: [[Date]] {
+        guard let monthInterval = calendar.dateInterval(of: .month, for: displayedMonth),
+              let firstWeek = calendar.dateInterval(of: .weekOfYear, for: monthInterval.start)
+        else { return [] }
+        var result: [[Date]] = []
+        var weekStart = firstWeek.start
+        while weekStart < monthInterval.end {
+            let week = (0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: weekStart) }
+            result.append(week)
+            guard let next = calendar.date(byAdding: .weekOfYear, value: 1, to: weekStart) else { break }
+            weekStart = next
+        }
+        return result
+    }
+
+    private var weekdayLetters: [String] {
+        let symbols = calendar.veryShortWeekdaySymbols
+        let first = calendar.firstWeekday - 1
+        return (0..<7).map { symbols[($0 + first) % 7] }
+    }
+
+    var body: some View {
+        VStack(spacing: Theme.Spacing.xs) {
+            HStack {
+                Button {
+                    monthOffset -= 1
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: Theme.Metrics.iconInline - 6, weight: .semibold))
+                        .foregroundStyle(Theme.Palette.textSecondary)
+                        .frame(width: Theme.Metrics.controlHeight - 8, height: Theme.Metrics.controlHeight - 8)
+                }
+                .buttonStyle(.plain)
+                .fluentHover()
+                .accessibilityLabel("Previous month")
+                Spacer()
+                Text(displayedMonth.formatted(.dateTime.month(.wide).year()))
+                    .font(Theme.Font.bodyStrong)
+                    .foregroundStyle(Theme.Palette.textPrimary)
+                Spacer()
+                Button {
+                    monthOffset += 1
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: Theme.Metrics.iconInline - 6, weight: .semibold))
+                        .foregroundStyle(Theme.Palette.textSecondary)
+                        .frame(width: Theme.Metrics.controlHeight - 8, height: Theme.Metrics.controlHeight - 8)
+                }
+                .buttonStyle(.plain)
+                .fluentHover()
+                .accessibilityLabel("Next month")
+            }
+
+            HStack(spacing: 0) {
+                ForEach(Array(weekdayLetters.enumerated()), id: \.offset) { _, letter in
+                    Text(letter)
+                        .font(Theme.Font.caption)
+                        .foregroundStyle(Theme.Palette.textSecondary)
+                        .frame(maxWidth: .infinity)
+                }
+            }
+
+            ForEach(Array(weeks.enumerated()), id: \.offset) { _, week in
+                let containsAnchor = week.contains { calendar.isDate($0, inSameDayAs: anchor) }
+                HStack(spacing: 0) {
+                    ForEach(week, id: \.self) { day in
+                        dayCell(day)
+                    }
+                }
+                .background(
+                    highlightWeek && containsAnchor
+                        ? Capsule().fill(Theme.Palette.selected)
+                        : nil
+                )
+            }
+        }
+        .onChange(of: anchor) { _, _ in monthOffset = 0 }
+    }
+
+    @ViewBuilder
+    private func dayCell(_ day: Date) -> some View {
+        let inMonth = calendar.isDate(day, equalTo: displayedMonth, toGranularity: .month)
+        let isToday = calendar.isDateInToday(day)
+        let isSelected = calendar.isDate(day, inSameDayAs: anchor)
+        Button {
+            onSelect(day)
+        } label: {
+            Text("\(calendar.component(.day, from: day))")
+                .font(isToday ? Theme.Font.bodyStrong : Theme.Font.caption)
+                .monospacedDigit()
+                .foregroundStyle(
+                    isToday
+                        ? Theme.Palette.textOnAccent
+                        : (inMonth ? Theme.Palette.textPrimary : Theme.Palette.textTertiary)
+                )
+                .frame(maxWidth: .infinity)
+                .frame(height: Theme.Metrics.listRowHeight - 6)
+                .background {
+                    if isToday {
+                        Circle().fill(Theme.Palette.primaryFill)
+                    } else if isSelected, !highlightWeek {
+                        Circle().fill(Theme.Palette.selected)
+                    }
+                }
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(day.formatted(date: .abbreviated, time: .omitted))
+    }
+}
+
 // MARK: - Quick-create card (popover form chrome)
 
 /// Outlook's quick-create popover anatomy: blue two-line header with an
