@@ -277,14 +277,21 @@ enum Theme {
 
 extension Color {
     /// Resolves to `light` or `dark` with the current appearance.
+    ///
+    /// The dynamic-provider closures MUST be `@Sendable`: the system resolves
+    /// them on SwiftUI's async render thread (on-device, not the simulator),
+    /// and under this project's default-MainActor isolation a plain closure
+    /// would be MainActor-bound — the Swift 6 runtime then traps with
+    /// `dispatch_assert_queue_fail` the moment a module transition renders
+    /// asynchronously (iPad crash, 2026-07-24).
     init(light: Color, dark: Color) {
         #if os(macOS)
-        self = Color(nsColor: NSColor(name: nil) { appearance in
+        self = Color(nsColor: NSColor(name: nil) { @Sendable appearance in
             let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
             return NSColor(isDark ? dark : light)
         })
         #else
-        self = Color(uiColor: UIColor { traits in
+        self = Color(uiColor: UIColor { @Sendable traits in
             UIColor(traits.userInterfaceStyle == .dark ? dark : light)
         })
         #endif
